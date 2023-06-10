@@ -29,7 +29,7 @@ export class Campaign {
   @Column()
   investor: number;
 
-  @Column({name: 'image_url'})
+  @Column({name: 'image_url', nullable: true})
   imageUrl: string;
 
   @Column({name: "creator_id"})

@@ -15,8 +15,8 @@ export class CampaignController {
   async create(@Request() req, @Body() createCampaignDto: CreateCampaignDto, @Res() res: Response) :Promise<Response> {
     try {
       const user = req.user;
-      const susscess = await this.campaignService.create(user, createCampaignDto);
-      return res.status(HttpStatus.OK).json({susscess});
+      const success = await this.campaignService.create(user, createCampaignDto);
+      return res.status(HttpStatus.OK).json({success});
     } catch (error) {
       console.log(error);
       return res.status(HttpStatus.BAD_REQUEST).json(error.response);

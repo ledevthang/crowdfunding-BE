@@ -25,7 +25,7 @@ export class User {
   @Column()
   password: string;
 
-  @Column({name: "role_id"})
+  @Column({name: "role_id", default: 2})
   roleId: number;
 
   @OneToMany(() => Campaign, (campaign) => campaign.creator)

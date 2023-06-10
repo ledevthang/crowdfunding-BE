@@ -1,7 +1,20 @@
-import { Campaign } from "src/campaign/entities/campaign.entity";
-import { User } from "src/user/entities/user.entity";
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Campaign } from 'src/campaign/entities/campaign.entity';
+import { User } from 'src/user/entities/user.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
+enum transactionStatus {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+}
 @Entity()
 export class Transaction {
   @PrimaryGeneratedColumn()
@@ -10,34 +23,38 @@ export class Transaction {
   @Column()
   amount: number;
 
-  @Column({name: "bank_name"})
+  @Column({ name: 'bank_name' })
   bankName: string;
 
-  @Column({name: "bank_account_number", unique: true})
+  @Column({ name: 'bank_account_number', unique: true })
   bankAccountNumber: string;
 
-  @Column({name: "banker_name"})
+  @Column({ name: 'banker_name' })
   bankerName: string;
 
-  @Column({name: "banker_address"})
+  @Column({ name: 'banker_address' })
   bankerAddress: string;
 
-  @Column({name: "banker_phone"})
+  @Column({ name: 'banker_phone' })
   bankerPhone: string;
 
-  @Column({name: "banker_zip_code"})
+  @Column({ name: 'banker_zip_code' })
   bankerZipCode: string;
 
-  @Column({name: "banker_email"})
+  @Column({ name: 'banker_email' })
   bankerEmail: string;
 
   @Column()
   note: string;
 
-  @Column()
-  status: string;
+  @Column({
+    type: 'enum',
+    enum: transactionStatus,
+    default: transactionStatus.PENDING,
+  })
+  status: transactionStatus;
 
-  @Column({name: "campaign_id"})
+  @Column({ name: 'campaign_id' })
   campaignId: number;
 
   @ManyToOne(() => Campaign, (campaign) => campaign.transactions)

@@ -9,8 +9,8 @@ export class UserController {
   @Post()
   async create(@Body() createUserDto: CreateUserDto, @Res() res: Response,) : Promise<Response> {
     try {
-      const susscess = await this.userService.create(createUserDto);
-      return res.status(HttpStatus.OK).json({susscess});
+      const success = await this.userService.create(createUserDto);
+      return res.status(HttpStatus.OK).json({success});
     } catch (error) {
       console.log(error);
       return res.status(HttpStatus.BAD_REQUEST).json(error.response);
