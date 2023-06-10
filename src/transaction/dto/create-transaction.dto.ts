@@ -1,3 +1,5 @@
+import { transactionStatus } from "src/base/enum";
+
 export class CreateTransactionDto {
   amount: number;
   bankName: string;
@@ -9,4 +11,8 @@ export class CreateTransactionDto {
   bankerEmail: string;
   note: string;
   campaignId: number;
+}
+
+export class ChangeTransactionStatusDto {
+  status: transactionStatus;
 }

@@ -1,6 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Res, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
-import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { ChangeTransactionStatusDto, CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Response } from 'express';
@@ -35,6 +35,23 @@ export class TransactionController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTransactionDto: UpdateTransactionDto) {
     return this.transactionService.update(+id, updateTransactionDto);
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('status/:id')
+  async updateStatus(@Request() req, @Param('id') id: string, @Body() changeTransactionStatusDto: ChangeTransactionStatusDto, @Res() res: Response) : Promise<Response> {
+    try {
+      const roleId = req.user.roleId
+      if (roleId === 1) {
+        const success = await this.transactionService.changeStatus(+id, changeTransactionStatusDto);
+        return res.status(HttpStatus.OK).json({success});
+      } else {
+        throw new UnauthorizedException()
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpStatus.BAD_REQUEST).json(error.response);
+    }
   }
 
   @Delete(':id')

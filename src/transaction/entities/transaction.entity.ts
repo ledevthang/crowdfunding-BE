@@ -1,3 +1,4 @@
+import { transactionStatus } from 'src/base/enum';
 import { Campaign } from 'src/campaign/entities/campaign.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
@@ -10,11 +11,11 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-enum transactionStatus {
-  PENDING = 'PENDING',
-  ACCEPTED = 'ACCEPTED',
-  REJECTED = 'REJECTED',
-}
+// enum transactionStatus {
+//   PENDING = 'PENDING',
+//   ACCEPTED = 'ACCEPTED',
+//   REJECTED = 'REJECTED',
+// }
 @Entity()
 export class Transaction {
   @PrimaryGeneratedColumn()
@@ -64,6 +65,10 @@ export class Transaction {
   @ManyToMany(() => User, (user) => user.transactions, {
     cascade: true,
   })
-  @JoinTable()
+  @JoinTable({
+    name: "transaction_user",
+    joinColumn: { name: "transaction_id", referencedColumnName: "id" },
+    inverseJoinColumn: { name: "user_id" }
+  })
   users: User[];
 }

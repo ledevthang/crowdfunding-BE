@@ -1,21 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { ChangeTransactionStatusDto, CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transaction } from './entities/transaction.entity';
 import { User } from 'src/user/entities/user.entity';
+import { UserService } from 'src/user/user.service';
+import { transactionStatus } from 'src/base/enum';
 
 @Injectable()
 export class TransactionService {
   constructor(
     @InjectRepository(Transaction)
     private readonly transactionRepository: Repository<Transaction>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    // @InjectRepository(User)
+    // private readonly userRepository: Repository<User>,
+    private readonly userService: UserService,
   ) // private readonly userService: UserService,
   {}
-  async create(creatorId: number, createTransactionDto: CreateTransactionDto) {
+  async create(creatorId: number, createTransactionDto: CreateTransactionDto) : Promise<Boolean> {
     try {
       const {
         amount,
@@ -29,9 +32,10 @@ export class TransactionService {
         note,
         campaignId,
       } = createTransactionDto;
-      const creator = await this.userRepository.findOne({
-        where: { id: creatorId },
-      });
+      const creator = await this.userService.findOne(creatorId)
+      // const creator = await this.userRepository.findOne({
+      //   where: { id: creatorId },
+      // });
 
       const transaction = {
         amount,
@@ -46,10 +50,9 @@ export class TransactionService {
         campaignId,
         users: [creator],
       };
-      console.log('create transaction', transaction);
       const createdTransaction = this.transactionRepository.create(transaction);
-      const success = this.transactionRepository.save(createdTransaction);
-      return success;
+      this.transactionRepository.save(createdTransaction);
+      return true;
     } catch (error) {
       throw error;
     }
@@ -59,8 +62,13 @@ export class TransactionService {
     return `This action returns all transaction`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} transaction`;
+  async findOne(id: number) : Promise<Transaction> {
+    try {
+      const transaction = await this.transactionRepository.findOne({where: {id: id}, relations: ['users']});
+      return transaction;
+    } catch (error) {
+      throw error;
+    }
   }
 
   update(id: number, updateTransactionDto: UpdateTransactionDto) {
@@ -69,5 +77,18 @@ export class TransactionService {
 
   remove(id: number) {
     return `This action removes a #${id} transaction`;
+  }
+
+  async changeStatus(id: number, changeTransactionStatusDto: ChangeTransactionStatusDto) : Promise<Boolean> {
+    try {
+      const {status} = changeTransactionStatusDto
+      const transaction = await this.findOne(id)
+      transaction.status = status
+      await this.transactionRepository.save(transaction);
+      return true
+    } catch (error) {
+      console.log(error);
+      throw error
+    }
   }
 }
