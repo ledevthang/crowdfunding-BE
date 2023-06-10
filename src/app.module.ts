@@ -13,6 +13,8 @@ import { Category } from './category/entities/category.entity';
 import { Campaign } from './campaign/entities/campaign.entity';
 import { Transaction } from './transaction/entities/transaction.entity';
 import { AuthModule } from './auth/auth.module';
+import { RoleModule } from './role/role.module';
+import { Role } from './role/entities/role.entity';
 
 @Module({
   imports: [
@@ -26,7 +28,7 @@ import { AuthModule } from './auth/auth.module';
       username: process.env.DATABASE_USERNAME,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
-      entities: [User, Category, Campaign, Transaction],
+      entities: [User, Category, Campaign, Transaction, Role],
       synchronize: true,
       ssl: true
     }),
@@ -35,6 +37,7 @@ import { AuthModule } from './auth/auth.module';
     CampaignModule,
     TransactionModule,
     AuthModule,
+    RoleModule,
   ],
   controllers: [AppController],
   providers: [AppService],

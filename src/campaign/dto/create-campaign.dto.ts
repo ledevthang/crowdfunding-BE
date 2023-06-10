@@ -4,5 +4,6 @@ export class CreateCampaignDto {
   location: string;
   endAt: string;
   goal: number;
+  imageUrl: string;
   categoryId: number;
 }

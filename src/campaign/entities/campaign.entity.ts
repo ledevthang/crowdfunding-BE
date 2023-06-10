@@ -29,6 +29,9 @@ export class Campaign {
   @Column()
   investor: number;
 
+  @Column({name: 'image_url'})
+  imageUrl: string;
+
   @Column({name: "creator_id"})
   creatorId: number;
 

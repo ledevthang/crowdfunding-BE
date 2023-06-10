@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { Campaign } from './entities/campaign.entity';
 import { FindManyOptions, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PagingDto, ResponsePaging } from 'src/base/base.dto';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class CampaignService {
@@ -13,12 +14,15 @@ export class CampaignService {
     private campaignRepository: Repository<Campaign>,
   ) {}
   async create(
-    creatorId: number,
+    user: User,
     createCampaignDto: CreateCampaignDto,
   ): Promise<Boolean> {
-    const { title, description, location, endAt, goal, categoryId } =
+    const { title, description, location, endAt, goal, imageUrl, categoryId } =
       createCampaignDto;
     try {
+      if (user.roleId !== 1) {
+        throw new UnauthorizedException();
+      }
       const startedAt = new Date();
       const endAtTime = new Date(endAt);
       const investor = 0;
@@ -30,12 +34,15 @@ export class CampaignService {
         endAt: endAtTime,
         investor,
         goal,
-        creatorId,
+        creatorId: user.id,
+        imageUrl,
         categoryId,
       };
       await this.campaignRepository.save(campaign);
       return true;
-    } catch (error) {}
+    } catch (error) {
+      throw error;
+    }
   }
 
   async find(pagingDto: PagingDto) : Promise<ResponsePaging<Campaign>> {
@@ -49,6 +56,7 @@ export class CampaignService {
         order: {
           id: order === 'desc' ? 'DESC' : 'ASC',
         },
+        relations: ['creator', 'category']
       };
       if (query) {
         findParams.where = {
@@ -72,8 +80,13 @@ export class CampaignService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} campaign`;
+  async findOne(id: number) : Promise<Campaign> {
+    try {
+      const campaign = this.campaignRepository.findOne({where: {id: id}, relations: ['creator', 'category']});
+      return campaign;
+    } catch (error) {
+      throw error;
+    }
   }
 
   update(id: number, updateCampaignDto: UpdateCampaignDto) {

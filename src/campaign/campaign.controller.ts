@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, HttpStatus, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, HttpStatus, Res, UnauthorizedException } from '@nestjs/common';
 import { CampaignService } from './campaign.service';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
@@ -14,12 +14,12 @@ export class CampaignController {
   @Post()
   async create(@Request() req, @Body() createCampaignDto: CreateCampaignDto, @Res() res: Response) :Promise<Response> {
     try {
-      const userId = req.user.id;
-      const susscess = await this.campaignService.create(userId, createCampaignDto);
+      const user = req.user;
+      const susscess = await this.campaignService.create(user, createCampaignDto);
       return res.status(HttpStatus.OK).json({susscess});
     } catch (error) {
       console.log(error);
-      return res.status(HttpStatus.BAD_REQUEST).send();
+      return res.status(HttpStatus.BAD_REQUEST).json(error.response);
     }
   }
 
@@ -30,13 +30,19 @@ export class CampaignController {
       return res.status(HttpStatus.OK).json(campaignsPaging);
     } catch (error) {
       console.log(error);
-      return res.status(HttpStatus.BAD_REQUEST).send();
+      return res.status(HttpStatus.BAD_REQUEST).json(error.response);
     }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.campaignService.findOne(+id);
+  async findOne(@Param('id') id: string, @Res() res: Response): Promise<Response> {
+    try {
+      const campaign = await this.campaignService.findOne(+id);
+      return res.status(HttpStatus.OK).json(campaign);
+    } catch (error) {
+      console.error(error);
+      return res.status(HttpStatus.BAD_REQUEST).json(error.response);
+    }
   }
 
   @Patch(':id')

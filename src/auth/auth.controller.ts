@@ -33,7 +33,7 @@ export class AuthController {
       return res.status(HttpStatus.OK).json(token);
     } catch (error) {
       console.log(error);
-      return res.status(HttpStatus.BAD_REQUEST).send();
+      return res.status(HttpStatus.BAD_REQUEST).json(error.response);
     }
   }
 

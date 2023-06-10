@@ -19,7 +19,8 @@ export class UserService {
       }
       const salt = +process.env.HASH_SALT;
       const hash = await bcrypt.hash(password, salt);
-      const user = { name, email, password: hash };
+      const roleId = 2
+      const user = { name, email, password: hash, roleId };
       await this.userRepository.save(user);
       return true;
     } catch (error) {
@@ -34,10 +35,10 @@ export class UserService {
   async findOne(id: number): Promise<ResponseUserDto> {
     try {
       const user = await this.userRepository.findOne({
-        where: { id: id },
+        where: { id: id }, relations: ['role']
       });
-      const { name, email } = user;
-      const responseUser = { id, name, email } as ResponseUserDto;
+      const { name, email, role } = user;
+      const responseUser = { id, name, email, role } as ResponseUserDto;
       return responseUser;
     } catch (error) {
       throw error;
@@ -55,7 +56,7 @@ export class UserService {
   async findOneByEmail(email: string): Promise<User> {
     try {
       const user = await this.userRepository.findOne({
-        where: { email: email },
+        where: { email: email }, relations: ['role']
       });
       return user;
     } catch (error) {
