@@ -20,7 +20,7 @@ import { AuthModule } from './auth/auth.module';
       load: [configuration],
     }),
     TypeOrmModule.forRoot({
-      type: 'mysql',
+      type: 'postgres',
       host: process.env.DATABASE_HOST,
       port: +process.env.DATABASE_PORT,
       username: process.env.DATABASE_USERNAME,
@@ -28,6 +28,7 @@ import { AuthModule } from './auth/auth.module';
       database: process.env.DATABASE_NAME,
       entities: [User, Category, Campaign, Transaction],
       synchronize: true,
+      ssl: true
     }),
     UserModule,
     CategoryModule,

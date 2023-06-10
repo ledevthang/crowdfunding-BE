@@ -17,10 +17,10 @@ export class Campaign {
   @Column()
   location: string;
 
-  @Column({ name: 'started_at', type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ name: 'started_at', type: 'date', default: () => 'CURRENT_TIMESTAMP' })
   startedAt: Date;
 
-  @Column({ name: 'end_at', type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ name: 'end_at', type: 'date', default: () => 'CURRENT_TIMESTAMP' })
   endAt: Date;
 
   @Column()
