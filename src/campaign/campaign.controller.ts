@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, HttpStatus, Res, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, HttpStatus, Res, UnauthorizedException, Query } from '@nestjs/common';
 import { CampaignService } from './campaign.service';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
@@ -24,7 +24,7 @@ export class CampaignController {
   }
 
   @Get()
-  async find(@Param() pagingDto: PagingDto, @Res() res: Response) : Promise<Response>{
+  async find(@Query() pagingDto: PagingDto, @Res() res: Response) : Promise<Response>{
     try {
       const campaignsPaging = await this.campaignService.find(pagingDto);
       return res.status(HttpStatus.OK).json(campaignsPaging);

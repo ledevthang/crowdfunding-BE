@@ -3,3 +3,7 @@ export enum transactionStatus {
   ACCEPTED = 'ACCEPTED',
   REJECTED = 'REJECTED',
 }
+
+export enum paymentMethods {
+  TRANSFER = "TRANSFER"
+}

@@ -5,7 +5,6 @@ import {
   Column,
   Entity,
   JoinColumn,
-  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -31,7 +30,7 @@ export class User {
   @OneToMany(() => Campaign, (campaign) => campaign.creator)
   campaigns: Campaign[];
 
-  @ManyToMany(() => Transaction, (transaction) => transaction.users)
+  @OneToMany(() => Transaction, (transaction) => transaction.creator)
   transactions: Transaction[];
 
   @ManyToOne(() => Role, (role) => role.users)

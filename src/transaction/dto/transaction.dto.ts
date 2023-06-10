@@ -1,3 +1,4 @@
+import { PagingDto } from "src/base/base.dto";
 import { transactionStatus } from "src/base/enum";
 
 export class CreateTransactionDto {
@@ -15,4 +16,11 @@ export class CreateTransactionDto {
 
 export class ChangeTransactionStatusDto {
   status: transactionStatus;
+}
+
+export class UpdateTransactionDto {
+}
+
+export class TransactionPagingDto extends PagingDto {
+  status: string;
 }

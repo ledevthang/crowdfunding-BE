@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Res, HttpStatus, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Res, HttpStatus, UnauthorizedException, Query } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
-import { ChangeTransactionStatusDto, CreateTransactionDto } from './dto/create-transaction.dto';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { ChangeTransactionStatusDto, CreateTransactionDto, TransactionPagingDto, UpdateTransactionDto } from './dto/transaction.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Response } from 'express';
 
@@ -23,13 +22,25 @@ export class TransactionController {
   }
 
   @Get()
-  findAll() {
-    return this.transactionService.findAll();
+  async find(@Query() pagingDto: TransactionPagingDto, @Res() res: Response) : Promise<Response>{
+    try {
+      const transactionPaging = await this.transactionService.find(pagingDto);
+      return res.status(HttpStatus.OK).json(transactionPaging);
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpStatus.BAD_REQUEST).json(error.response);
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.transactionService.findOne(+id);
+  async findOne(@Param('id') id: string, @Res() res: Response) : Promise<Response>{
+    try {
+      const transaction = await this.transactionService.findOne(+id);
+      return res.status(HttpStatus.OK).json(transaction);
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpStatus.BAD_REQUEST).json(error.response);
+    }
   }
 
   @Patch(':id')
@@ -48,6 +59,18 @@ export class TransactionController {
       } else {
         throw new UnauthorizedException()
       }
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpStatus.BAD_REQUEST).json(error.response);
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('accepted')
+  async findByUser(@Query() pagingDto: TransactionPagingDto, @Res() res: Response) : Promise<Response>{
+    try {
+      const transactionPaging = await this.transactionService.find(pagingDto);
+      return res.status(HttpStatus.OK).json(transactionPaging);
     } catch (error) {
       console.log(error);
       return res.status(HttpStatus.BAD_REQUEST).json(error.response);

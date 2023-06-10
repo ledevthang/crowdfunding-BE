@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { ChangeTransactionStatusDto, CreateTransactionDto } from './dto/create-transaction.dto';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
-import { Repository } from 'typeorm';
+import {
+  ChangeTransactionStatusDto,
+  CreateTransactionDto,
+  TransactionPagingDto,
+  UpdateTransactionDto,
+} from './dto/transaction.dto';
+import { FindManyOptions, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transaction } from './entities/transaction.entity';
-import { User } from 'src/user/entities/user.entity';
-import { UserService } from 'src/user/user.service';
+import { ResponsePaging } from 'src/base/base.dto';
 import { transactionStatus } from 'src/base/enum';
 
 @Injectable()
@@ -13,12 +16,11 @@ export class TransactionService {
   constructor(
     @InjectRepository(Transaction)
     private readonly transactionRepository: Repository<Transaction>,
-    // @InjectRepository(User)
-    // private readonly userRepository: Repository<User>,
-    private readonly userService: UserService,
-  ) // private readonly userService: UserService,
-  {}
-  async create(creatorId: number, createTransactionDto: CreateTransactionDto) : Promise<Boolean> {
+  ) {}
+  async create(
+    creatorId: number,
+    createTransactionDto: CreateTransactionDto,
+  ): Promise<Boolean> {
     try {
       const {
         amount,
@@ -32,11 +34,6 @@ export class TransactionService {
         note,
         campaignId,
       } = createTransactionDto;
-      const creator = await this.userService.findOne(creatorId)
-      // const creator = await this.userRepository.findOne({
-      //   where: { id: creatorId },
-      // });
-
       const transaction = {
         amount,
         bankName,
@@ -48,7 +45,7 @@ export class TransactionService {
         bankerEmail,
         note,
         campaignId,
-        users: [creator],
+        creatorId,
       };
       const createdTransaction = this.transactionRepository.create(transaction);
       this.transactionRepository.save(createdTransaction);
@@ -58,13 +55,49 @@ export class TransactionService {
     }
   }
 
-  findAll() {
-    return `This action returns all transaction`;
+  async find(
+    pagingDto: TransactionPagingDto,
+  ): Promise<ResponsePaging<Transaction>> {
+    try {
+      const { page, size, query, order, status } = pagingDto;
+      const findSize = size ? +size : 10;
+      const skip = page ? (page - 1) * size : 0;
+      const findParams: FindManyOptions<Transaction> = {
+        take: findSize,
+        skip: skip,
+        order: {
+          id: order === 'desc' ? 'DESC' : 'ASC',
+        },
+        relations: ['campaign', 'creator'],
+      };
+      if (status && transactionStatus[status]) {
+        findParams.where = {
+          status: transactionStatus[status],
+        };
+      }
+      const [campaigns, total] = await this.transactionRepository.findAndCount(
+        findParams,
+      );
+      // const totalPage
+      const result = {
+        data: campaigns,
+        page: page,
+        pageSize: findSize,
+        totalCount: total,
+        totalPages: Math.ceil(total / findSize),
+      };
+      return result;
+    } catch (error) {
+      throw error;
+    }
   }
 
-  async findOne(id: number) : Promise<Transaction> {
+  async findOne(id: number): Promise<Transaction> {
     try {
-      const transaction = await this.transactionRepository.findOne({where: {id: id}, relations: ['users']});
+      const transaction = await this.transactionRepository.findOne({
+        where: { id: id },
+        relations: ['campaign', 'creator'],
+      });
       return transaction;
     } catch (error) {
       throw error;
@@ -79,16 +112,62 @@ export class TransactionService {
     return `This action removes a #${id} transaction`;
   }
 
-  async changeStatus(id: number, changeTransactionStatusDto: ChangeTransactionStatusDto) : Promise<Boolean> {
+  async changeStatus(
+    id: number,
+    changeTransactionStatusDto: ChangeTransactionStatusDto,
+  ): Promise<Boolean> {
     try {
-      const {status} = changeTransactionStatusDto
-      const transaction = await this.findOne(id)
-      transaction.status = status
+      const { status } = changeTransactionStatusDto;
+      const transaction = await this.findOne(id);
+      transaction.status = status;
       await this.transactionRepository.save(transaction);
-      return true
+      return true;
     } catch (error) {
       console.log(error);
-      throw error
+      throw error;
+    }
+  }
+
+  async findAcceptedTransactionsByUser(
+    creatorId: number,
+    pagingDto: TransactionPagingDto,
+  ): Promise<ResponsePaging<Transaction>> {
+    try {
+      const { page, size, query, order, status } = pagingDto;
+      const findSize = size ? +size : 10;
+      const skip = page ? (page - 1) * size : 0;
+      const findParams: FindManyOptions<Transaction> = {
+        take: findSize,
+        skip: skip,
+        order: {
+          id: order === 'desc' ? 'DESC' : 'ASC',
+        },
+        relations: ['campaign', 'creator'],
+      };
+      console.log('findAcceptedTransactionsByUser', creatorId, {
+        page,
+        size,
+        query,
+        order,
+        status,
+      });
+      findParams.where = {
+        status: transactionStatus['ACCEPTED'],
+      };
+      const [campaigns, total] = await this.transactionRepository.findAndCount(
+        findParams,
+      );
+      // const totalPage
+      const result = {
+        data: campaigns,
+        page: page,
+        pageSize: findSize,
+        totalCount: total,
+        totalPages: Math.ceil(total / findSize),
+      };
+      return result;
+    } catch (error) {
+      throw error;
     }
   }
 }

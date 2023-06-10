@@ -1,12 +1,10 @@
-import { transactionStatus } from 'src/base/enum';
+import { paymentMethods, transactionStatus } from 'src/base/enum';
 import { Campaign } from 'src/campaign/entities/campaign.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   Entity,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -55,6 +53,14 @@ export class Transaction {
   })
   status: transactionStatus;
 
+  @Column({
+    name: 'payment_method',
+    type: 'enum',
+    enum: paymentMethods,
+    default: paymentMethods.TRANSFER,
+  })
+  paymentMethod: paymentMethods;
+
   @Column({ name: 'campaign_id' })
   campaignId: number;
 
@@ -62,13 +68,10 @@ export class Transaction {
   @JoinColumn({ name: 'campaign_id' })
   campaign: Campaign;
 
-  @ManyToMany(() => User, (user) => user.transactions, {
-    cascade: true,
-  })
-  @JoinTable({
-    name: "transaction_user",
-    joinColumn: { name: "transaction_id", referencedColumnName: "id" },
-    inverseJoinColumn: { name: "user_id" }
-  })
-  users: User[];
+  @Column({ name: 'creator_id' })
+  creatorId: number;
+
+  @ManyToOne(() =>  User, (user) => user.transactions)
+  @JoinColumn({name: 'creator_id'})
+  creator: User;
 }

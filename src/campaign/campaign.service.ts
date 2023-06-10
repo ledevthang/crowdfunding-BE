@@ -48,8 +48,8 @@ export class CampaignService {
   async find(pagingDto: PagingDto) : Promise<ResponsePaging<Campaign>> {
     try {
       const { page, size, query, order } = pagingDto;
-      const findSize = size ? size : 10;
-      const skip = page ? page * size : 0;
+      const findSize = size ? +size : 10;
+      const skip = page ? (page - 1) * size : 0;
       const findParams: FindManyOptions<Campaign> = {
         take: findSize,
         skip: skip,
@@ -66,13 +66,14 @@ export class CampaignService {
       const [campaigns, total] = await this.campaignRepository.findAndCount(
         findParams,
       );
+      console.log('findParams', findParams, { page, size, query, order })
       // const totalPage
       const result = {
         data: campaigns,
-        page: skip,
+        page: page,
         pageSize: findSize,
         totalCount: total,
-        totalPages: total,
+        totalPages: Math.ceil(total / findSize),
       }
       return result;
     } catch (error) {
