@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, HttpStatus, Res, UnauthorizedException, Query } from '@nestjs/common';
 import { CampaignService } from './campaign.service';
-import { CreateCampaignDto } from './dto/create-campaign.dto';
-import { UpdateCampaignDto } from './dto/update-campaign.dto';
+import { CreateCampaignDto, UpdateCampaignDto } from './dto/campaign.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Response } from 'express';
 import { PagingDto } from 'src/base/base.dto';

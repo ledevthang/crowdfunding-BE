@@ -104,6 +104,22 @@ export class TransactionService {
     }
   }
 
+  async findTotalAmoutTransactionByCampaignId(campaignId: number) {
+    try {
+      const queryBuilder = this.transactionRepository.createQueryBuilder('transaction');
+      queryBuilder.select('SUM(transaction.amount)', 'sum');
+      queryBuilder.where('transaction.campaignId = :campaignId', { campaignId });
+      queryBuilder.andWhere('transaction.status = :status', { status: transactionStatus['ACCEPTED'] });
+
+      const result = await queryBuilder.getRawOne();
+      const sum = result.sum || 0;
+
+      return sum;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   update(id: number, updateTransactionDto: UpdateTransactionDto) {
     return `This action updates a #${id} transaction`;
   }
@@ -153,6 +169,7 @@ export class TransactionService {
       });
       findParams.where = {
         status: transactionStatus['ACCEPTED'],
+        creatorId
       };
       const [campaigns, total] = await this.transactionRepository.findAndCount(
         findParams,
