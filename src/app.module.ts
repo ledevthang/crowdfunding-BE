@@ -30,7 +30,7 @@ import { Role } from './role/entities/role.entity';
       database: process.env.DATABASE_NAME,
       entities: [User, Category, Campaign, Transaction, Role],
       synchronize: true,
-      ssl: true
+      ssl: true,
     }),
     UserModule,
     CategoryModule,
