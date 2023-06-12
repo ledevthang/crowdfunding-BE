@@ -24,3 +24,7 @@ export class UpdateCampaignDto {
   imageUrl: string;
   categoryId: number;
 }
+
+export class UserDto {
+
+}

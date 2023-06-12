@@ -22,6 +22,7 @@ import {
 } from './dto/transaction.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Response } from 'express';
+import { UserDto } from 'src/base/base.dto';
 
 @Controller('transaction')
 export class TransactionController {
@@ -60,13 +61,9 @@ export class TransactionController {
     @Res() res: Response,
   ): Promise<Response> {
     try {
-      const roleId = req.user.roleId;
-      if (roleId === 1) {
-        const transactionPaging = await this.transactionService.find(pagingDto);
+      const user = req.user as UserDto
+      const transactionPaging = await this.transactionService.find(user, pagingDto);
         return res.status(HttpStatus.OK).json(transactionPaging);
-      } else {
-        throw new UnauthorizedException();
-      }
     } catch (error) {
       console.log(error);
       return res.status(HttpStatus.BAD_REQUEST).json(error.response);
@@ -84,7 +81,7 @@ export class TransactionController {
     try {
       const creatorId = req.user.id;
       const transactionPaging =
-        await this.transactionService.findAcceptedTransactionsByUser(
+        await this.transactionService.findTransactionByCampaign(
           +campaignId,
           creatorId,
           pagingDto,

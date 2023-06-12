@@ -8,7 +8,7 @@ import {
 import { FindManyOptions, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transaction } from './entities/transaction.entity';
-import { ResponsePaging } from 'src/base/base.dto';
+import { ResponsePaging, UserDto } from 'src/base/base.dto';
 import { transactionStatus } from 'src/base/enum';
 
 @Injectable()
@@ -56,6 +56,7 @@ export class TransactionService {
   }
 
   async find(
+    user: UserDto,
     pagingDto: TransactionPagingDto,
   ): Promise<ResponsePaging<Transaction>> {
     try {
@@ -74,6 +75,9 @@ export class TransactionService {
         findParams.where = {
           status: transactionStatus[status],
         };
+      }
+      if (user.roleId === 2) {
+        findParams.where = {...findParams.where, creatorId: user.id};
       }
       const [campaigns, total] = await this.transactionRepository.findAndCount(
         findParams,
@@ -120,14 +124,6 @@ export class TransactionService {
     }
   }
 
-  update(id: number, updateTransactionDto: UpdateTransactionDto) {
-    return `This action updates a #${id} transaction`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} transaction`;
-  }
-
   async changeStatus(
     id: number,
     changeTransactionStatusDto: ChangeTransactionStatusDto,
@@ -144,7 +140,7 @@ export class TransactionService {
     }
   }
 
-  async findAcceptedTransactionsByUser(
+  async findTransactionByCampaign(
     campaignId: number,
     creatorId: number,
     pagingDto: TransactionPagingDto,
@@ -184,5 +180,13 @@ export class TransactionService {
     } catch (error) {
       throw error;
     }
+  }
+
+  update(id: number, updateTransactionDto: UpdateTransactionDto) {
+    return `This action updates a #${id} transaction`;
+  }
+
+  remove(id: number) {
+    return `This action removes a #${id} transaction`;
   }
 }

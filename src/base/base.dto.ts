@@ -13,3 +13,8 @@ export class PagingDto {
   readonly order: string;
 }
 
+export class UserDto {
+  id: number;
+  email: string;
+  roleId: number;
+}
