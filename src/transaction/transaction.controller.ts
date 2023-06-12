@@ -35,12 +35,17 @@ export class TransactionController {
     @Res() res: Response,
   ): Promise<Response> {
     try {
-      const creatorId = req.user.id;
-      const success = await this.transactionService.create(
-        creatorId,
-        createTransactionDto,
-      );
-      return res.status(HttpStatus.OK).json({ success });
+      if (createTransactionDto) {
+        const creatorId = req.user.id;
+        const success = await this.transactionService.create(
+          creatorId,
+          createTransactionDto,
+        );
+        return res.status(HttpStatus.OK).json({ success });
+      } else {
+        throw new Error('Error payload creating transaction')
+      }
+      
     } catch (error) {
       console.log(error);
       return res.status(HttpStatus.BAD_REQUEST).json(error.response);

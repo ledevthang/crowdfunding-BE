@@ -13,9 +13,13 @@ export class CampaignController {
   @Post()
   async create(@Request() req, @Body() createCampaignDto: CreateCampaignDto, @Res() res: Response) :Promise<Response> {
     try {
-      const user = req.user;
-      const success = await this.campaignService.create(user, createCampaignDto);
-      return res.status(HttpStatus.OK).json({success});
+      if (createCampaignDto) {
+        const user = req.user;
+        const success = await this.campaignService.create(user, createCampaignDto);
+        return res.status(HttpStatus.OK).json({success});
+      } else {
+        throw new Error('Error payload creating campaign')
+      }
     } catch (error) {
       console.log(error);
       return res.status(HttpStatus.BAD_REQUEST).json(error.response);

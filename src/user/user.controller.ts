@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpStatus,
+  Res,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { Response } from 'express';
@@ -7,10 +17,17 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto, @Res() res: Response,) : Promise<Response> {
+  async create(
+    @Body() createUserDto: CreateUserDto,
+    @Res() res: Response,
+  ): Promise<Response> {
     try {
-      const success = await this.userService.create(createUserDto);
-      return res.status(HttpStatus.OK).json({success});
+      if (createUserDto) {
+        const success = await this.userService.create(createUserDto);
+        return res.status(HttpStatus.OK).json({ success });
+      } else {
+        throw new Error('Error payload creating user');
+      }
     } catch (error) {
       console.log(error);
       return res.status(HttpStatus.BAD_REQUEST).json(error.response);
