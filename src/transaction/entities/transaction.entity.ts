@@ -25,7 +25,7 @@ export class Transaction {
   @Column({ name: 'bank_name' })
   bankName: string;
 
-  @Column({ name: 'bank_account_number', unique: true })
+  @Column({ name: 'bank_account_number'})
   bankAccountNumber: string;
 
   @Column({ name: 'banker_name' })

@@ -145,6 +145,7 @@ export class TransactionService {
   }
 
   async findAcceptedTransactionsByUser(
+    campaignId: number,
     creatorId: number,
     pagingDto: TransactionPagingDto,
   ): Promise<ResponsePaging<Transaction>> {
@@ -160,17 +161,14 @@ export class TransactionService {
         },
         relations: ['campaign', 'creator'],
       };
-      console.log('findAcceptedTransactionsByUser', creatorId, {
-        page,
-        size,
-        query,
-        order,
-        status,
-      });
       findParams.where = {
-        status: transactionStatus['ACCEPTED'],
-        creatorId
+        
+        creatorId,
+        campaignId
       };
+      if (status) {
+        findParams.where = {...findParams.where, status: transactionStatus[status]};
+      }
       const [campaigns, total] = await this.transactionRepository.findAndCount(
         findParams,
       );

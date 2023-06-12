@@ -69,9 +69,10 @@ export class TransactionController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('/accepted')
+  @Get('/campaign/:campaignId')
   async findByUser(
     @Request() req,
+    @Param('campaignId') campaignId: string,
     @Query() pagingDto: TransactionPagingDto,
     @Res() res: Response,
   ): Promise<Response> {
@@ -79,6 +80,7 @@ export class TransactionController {
       const creatorId = req.user.id;
       const transactionPaging =
         await this.transactionService.findAcceptedTransactionsByUser(
+          +campaignId,
           creatorId,
           pagingDto,
         );

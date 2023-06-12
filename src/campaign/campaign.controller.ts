@@ -22,6 +22,24 @@ export class CampaignController {
     }
   }
 
+  @UseGuards(AuthGuard)
+  @Get('self')
+  async findForAdmin(@Request() req, @Query() pagingDto: PagingDto, @Res() res: Response) : Promise<Response>{
+    try {
+      const user = req.user;
+      if (user.roleId === 1) {
+        const campaignsPaging = await this.campaignService.findForAdmin(user.id, pagingDto);
+        return res.status(HttpStatus.OK).json(campaignsPaging);
+      } else {
+        const campaignsPaging = await this.campaignService.findForUser(user.id, pagingDto);
+        return res.status(HttpStatus.OK).json(campaignsPaging);
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpStatus.BAD_REQUEST).json(error.response);
+    }
+  }
+
   @Get()
   async find(@Query() pagingDto: PagingDto, @Res() res: Response) : Promise<Response>{
     try {

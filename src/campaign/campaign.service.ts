@@ -98,6 +98,112 @@ export class CampaignService {
     }
   }
 
+  async findForAdmin(userId: number, pagingDto: PagingDto) : Promise<ResponsePaging<CampaignDto>> {
+    try {
+      const { page, size, query, order } = pagingDto;
+      const findSize = size ? +size : 10;
+      const skip = page ? (page - 1) * size : 0;
+      const findParams: FindManyOptions<Campaign> = {
+        take: findSize,
+        skip: skip,
+        order: {
+          id: order === 'desc' ? 'DESC' : 'ASC',
+        },
+        relations: ['creator', 'category', 'transactions'],
+      };
+      if (userId) {
+        findParams.where = {...findParams.where, creatorId: userId};
+      }
+      if (query) {
+        findParams.where = {...findParams.where, title: query};
+      }
+      const [campaigns, total] = await this.campaignRepository.findAndCount(
+        findParams,
+      );
+      console.log('campaigns', campaigns)
+
+      const campaignsWithTotalAmount = campaigns.map(campaign => {
+        const newCampaign = campaign as CampaignDto
+        // Other campaign fields
+        const totalAmount = newCampaign.transactions.reduce((total, transaction) => {
+          if (transaction.status === transactionStatus['ACCEPTED']) {
+            return total + transaction.amount
+          }
+        }, 0)
+        newCampaign.investedAmount = totalAmount
+        const progres = (newCampaign.investedAmount / newCampaign.goal) * 100
+        newCampaign.progress = +progres.toFixed(2)
+        return newCampaign
+      }) as unknown as CampaignDto[];
+
+      // const totalPage
+      const result = {
+        data: campaignsWithTotalAmount,
+        page: page,
+        pageSize: findSize,
+        totalCount: total,
+        totalPages: Math.ceil(total / findSize),
+      }
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findForUser(userId, pagingDto: PagingDto) : Promise<ResponsePaging<CampaignDto>> {
+    try {
+      const { page, size, query, order } = pagingDto;
+      const findSize = size ? +size : 10;
+      const skip = page ? (page - 1) * size : 0;
+      const findParams: FindManyOptions<Campaign> = {
+        take: findSize,
+        skip: skip,
+        order: {
+          id: order === 'desc' ? 'DESC' : 'ASC',
+        },
+        relations: ['creator', 'category', 'transactions'],
+      };
+      if (userId) {
+        findParams.where = {
+          transactions: {
+            creatorId: userId
+          },
+        };
+      }
+      if (query) {
+        findParams.where = {...findParams.where, title: query};
+      }
+      const [campaigns, total] = await this.campaignRepository.findAndCount(
+        findParams,
+      );
+      const campaignsWithTotalAmount = campaigns.map(campaign => {
+        const newCampaign = campaign as CampaignDto
+        // Other campaign fields
+        const totalAmount = newCampaign.transactions.reduce((total, transaction) => {
+          if (transaction.status === transactionStatus['ACCEPTED']) {
+            return total + transaction.amount
+          }
+        }, 0)
+        newCampaign.investedAmount = totalAmount
+        const progres = (newCampaign.investedAmount / newCampaign.goal) * 100
+        newCampaign.progress = +progres.toFixed(2)
+        return newCampaign
+      }) as unknown as CampaignDto[];
+
+      // const totalPage
+      const result = {
+        data: campaignsWithTotalAmount,
+        page: page,
+        pageSize: findSize,
+        totalCount: total,
+        totalPages: Math.ceil(total / findSize),
+      }
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async findOne(id: number) : Promise<CampaignDto> {
     try {
       const campaign = await this.campaignRepository.findOne({where: {id: id}, relations: ['creator', 'category', 'transactions']});
