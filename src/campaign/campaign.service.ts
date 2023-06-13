@@ -88,8 +88,10 @@ export class CampaignService {
         );
         newCampaign.investedAmount = totalAmount;
         newCampaign.investor = count;
-        const progres = (newCampaign.investedAmount / newCampaign.goal) * 100;
-        newCampaign.progress = +progres.toFixed(2);
+        const progres = newCampaign.investedAmount
+          ? (newCampaign.investedAmount / newCampaign.goal) * 100
+          : 0;
+        newCampaign.progress = progres ? +progres.toFixed(2) : 0;
         return newCampaign;
       }) as unknown as CampaignDto[];
 
@@ -148,8 +150,10 @@ export class CampaignService {
         );
         newCampaign.investor = count;
         newCampaign.investedAmount = totalAmount;
-        const progres = (newCampaign.investedAmount / newCampaign.goal) * 100;
-        newCampaign.progress = +progres.toFixed(2);
+        const progres = newCampaign.investedAmount
+          ? (newCampaign.investedAmount / newCampaign.goal) * 100
+          : 0;
+        newCampaign.progress = progres ? +progres.toFixed(2) : 0;
         return newCampaign;
       }) as unknown as CampaignDto[];
 
@@ -211,8 +215,10 @@ export class CampaignService {
         );
         newCampaign.investor = count;
         newCampaign.investedAmount = totalAmount;
-        const progres = (newCampaign.investedAmount / newCampaign.goal) * 100;
-        newCampaign.progress = +progres.toFixed(2);
+        const progres = newCampaign.investedAmount
+          ? (newCampaign.investedAmount / newCampaign.goal) * 100
+          : 0;
+        newCampaign.progress = progres ? +progres.toFixed(2) : 0;
         return newCampaign;
       }) as unknown as CampaignDto[];
 
@@ -249,8 +255,10 @@ export class CampaignService {
       );
       newCampaign.investor = count;
       newCampaign.investedAmount = totalAmount;
-      const progres = (newCampaign.investedAmount / newCampaign.goal) * 100;
-      newCampaign.progress = +progres.toFixed(2);
+      const progres = newCampaign.investedAmount
+        ? (newCampaign.investedAmount / newCampaign.goal) * 100
+        : 0;
+      newCampaign.progress = progres ? +progres.toFixed(2) : 0;
       return newCampaign;
     } catch (error) {
       throw error;
