@@ -55,16 +55,16 @@ export class CampaignController {
     }
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string, @Res() res: Response): Promise<Response> {
-    try {
-      const campaign = await this.campaignService.findOne(+id);
-      return res.status(HttpStatus.OK).json(campaign);
-    } catch (error) {
-      console.error(error);
-      return res.status(HttpStatus.BAD_REQUEST).json(error.response);
-    }
-  }
+  // @Get(':id')
+  // async findOne(@Param('id') id: string, @Res() res: Response): Promise<Response> {
+  //   try {
+  //     const campaign = await this.campaignService.findOne(+id);
+  //     return res.status(HttpStatus.OK).json(campaign);
+  //   } catch (error) {
+  //     console.error(error);
+  //     return res.status(HttpStatus.BAD_REQUEST).json(error.response);
+  //   }
+  // }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCampaignDto: UpdateCampaignDto) {

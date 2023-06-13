@@ -15,12 +15,15 @@ import { Transaction } from './transaction/entities/transaction.entity';
 import { AuthModule } from './auth/auth.module';
 import { RoleModule } from './role/role.module';
 import { Role } from './role/entities/role.entity';
+import { TaskModule } from './task/task.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       load: [configuration],
     }),
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DATABASE_HOST,
@@ -38,6 +41,7 @@ import { Role } from './role/entities/role.entity';
     TransactionModule,
     AuthModule,
     RoleModule,
+    TaskModule
   ],
   controllers: [AppController],
   providers: [AppService],

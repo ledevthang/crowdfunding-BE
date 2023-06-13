@@ -72,7 +72,6 @@ export class CampaignService {
       const [campaigns, total] = await this.campaignRepository.findAndCount(
         findParams,
       );
-      console.log('campaigns', campaigns);
 
       const campaignsWithTotalAmount = campaigns.map((campaign) => {
         const newCampaign = campaign as CampaignDto;
@@ -133,7 +132,6 @@ export class CampaignService {
       const [campaigns, total] = await this.campaignRepository.findAndCount(
         findParams,
       );
-      console.log('campaigns', campaigns);
 
       const campaignsWithTotalAmount = campaigns.map((campaign) => {
         const newCampaign = campaign as CampaignDto;

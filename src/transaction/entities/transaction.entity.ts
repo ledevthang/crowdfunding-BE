@@ -46,6 +46,12 @@ export class Transaction {
   @Column()
   note: string;
 
+  @Column({name: 'fund_date', type: 'date', default: () => 'CURRENT_TIMESTAMP' })
+  fundDate: Date;
+
+  @Column({name: 'updated_date', type: 'date', default: () => 'CURRENT_TIMESTAMP' })
+  updatedDate: Date;
+
   @Column({
     type: 'enum',
     enum: transactionStatus,

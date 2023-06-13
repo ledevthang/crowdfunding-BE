@@ -8,6 +8,7 @@ import { TransactionModule } from 'src/transaction/transaction.module';
 @Module({
   imports: [TypeOrmModule.forFeature([Campaign]), TransactionModule],
   controllers: [CampaignController],
-  providers: [CampaignService]
+  providers: [CampaignService],
+  exports: [CampaignService]
 })
 export class CampaignModule {}

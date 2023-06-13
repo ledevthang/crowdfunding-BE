@@ -131,7 +131,9 @@ export class TransactionService {
     try {
       const { status } = changeTransactionStatusDto;
       const transaction = await this.findOne(id);
+      const updatedDate = new Date()
       transaction.status = status;
+      transaction.updatedDate = updatedDate;
       await this.transactionRepository.save(transaction);
       return true;
     } catch (error) {
