@@ -1,4 +1,4 @@
-import { Campaign } from "src/campaign/entities/campaign.entity";
+import { Campaign } from "../../campaign/entities/campaign.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()

@@ -1,6 +1,6 @@
-import { Category } from "src/category/entities/category.entity";
-import { Transaction } from "src/transaction/entities/transaction.entity";
-import { User } from "src/user/entities/user.entity";
+import { Category } from "../../category/entities/category.entity";
+import { Transaction } from "../../transaction/entities/transaction.entity";
+import { User } from "../../user/entities/user.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()

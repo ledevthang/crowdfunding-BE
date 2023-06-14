@@ -1,6 +1,6 @@
-import { Campaign } from 'src/campaign/entities/campaign.entity';
-import { Role } from 'src/role/entities/role.entity';
-import { Transaction } from 'src/transaction/entities/transaction.entity';
+import { Campaign } from '../../campaign/entities/campaign.entity';
+import { Role } from '../../role/entities/role.entity';
+import { Transaction } from '../../transaction/entities/transaction.entity';
 import {
   Column,
   Entity,

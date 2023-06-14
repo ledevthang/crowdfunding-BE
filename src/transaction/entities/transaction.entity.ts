@@ -1,6 +1,6 @@
-import { paymentMethods, transactionStatus } from 'src/base/enum';
-import { Campaign } from 'src/campaign/entities/campaign.entity';
-import { User } from 'src/user/entities/user.entity';
+import { paymentMethods, transactionStatus } from '../../base/enum';
+import { Campaign } from '../../campaign/entities/campaign.entity';
+import { User } from '../../user/entities/user.entity';
 import {
   Column,
   Entity,

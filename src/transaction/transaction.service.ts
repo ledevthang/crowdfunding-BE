@@ -8,8 +8,8 @@ import {
 import { FindManyOptions, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Transaction } from './entities/transaction.entity';
-import { ResponsePaging, UserDto } from 'src/base/base.dto';
-import { transactionStatus } from 'src/base/enum';
+import { ResponsePaging, UserDto } from '../../src/base/base.dto';
+import { transactionStatus } from '../../src/base/enum';
 
 @Injectable()
 export class TransactionService {

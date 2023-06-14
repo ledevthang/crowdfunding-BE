@@ -20,9 +20,9 @@ import {
   TransactionPagingDto,
   UpdateTransactionDto,
 } from './dto/transaction.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard } from '../../src/auth/auth.guard';
 import { Response } from 'express';
-import { UserDto } from 'src/base/base.dto';
+import { UserDto } from '../../src/base/base.dto';
 
 @Controller('transaction')
 export class TransactionController {

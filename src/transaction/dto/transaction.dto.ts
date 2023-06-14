@@ -1,5 +1,5 @@
-import { PagingDto } from "src/base/base.dto";
-import { transactionStatus } from "src/base/enum";
+import { PagingDto } from "../../base/base.dto";
+import { transactionStatus } from "../../base/enum";
 
 export class CreateTransactionDto {
   amount: number;

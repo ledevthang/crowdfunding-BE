@@ -8,9 +8,9 @@ import {
 import { Campaign } from './entities/campaign.entity';
 import { FindManyOptions, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PagingDto, ResponsePaging } from 'src/base/base.dto';
-import { User } from 'src/user/entities/user.entity';
-import { transactionStatus } from 'src/base/enum';
+import { PagingDto, ResponsePaging } from '../../src/base/base.dto';
+import { User } from '../../src/user/entities/user.entity';
+import { transactionStatus } from '../../src/base/enum';
 
 @Injectable()
 export class CampaignService {
