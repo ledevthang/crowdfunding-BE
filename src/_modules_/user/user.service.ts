@@ -15,14 +15,14 @@ export class UserService {
   }
 
   async findByEmail(email: string): Promise<UserResult> {
-    const find = await this.prisma.user.findUnique({
+    const foundUser = await this.prisma.user.findUnique({
       where: { email }
     });
-    return exclude(find, ['password', 'refreshToken', 'expiredTime', 'capcha']);
+    return exclude(foundUser, ['password', 'refreshToken', 'expiredTime', 'capcha']);
   }
 
   async findOne(id: number): Promise<UserResult> {
-    const find = await this.prisma.user.findUnique({ where: { id } });
-    return exclude(find, ['password', 'refreshToken', 'expiredTime', 'capcha']);
+    const foundUser = await this.prisma.user.findUnique({ where: { id } });
+    return exclude(foundUser, ['password', 'refreshToken', 'expiredTime', 'capcha']);
   }
 }
