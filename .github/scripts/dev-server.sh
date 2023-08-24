@@ -1,5 +1,5 @@
 cd ~/crowdfunding-BE/
-git checkout main
+git checkout dev
 git pull
 pnpm install
 pnpm exec prisma generate
