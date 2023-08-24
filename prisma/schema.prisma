@@ -11,15 +11,109 @@ datasource db {
 }
 
 model User {
-  id    String   @id @default(uuid()) @db.Uuid
-  email String
-  role  UserRole
+  id            Int           @id @default(autoincrement())
+  email         String        @unique
+  firstName     String        @map("first_name")
+  lastName      String        @map("last_name")
+  displayName   String        @map("display_name")
+  password      String
+  dateOfBirth   DateTime?     @map("date_of_birth")
+  phoneNumber   String?
+  streetAddress String?       @map("street_address")
+  country       String?
+  city          String?
+  stateProvince String?       @map("state_province")
+  zip           String?
+  role          UserRole
+  refreshToken  String?       @map("refresh_token")
+  expiredTime   Float?        @map("expired_time")
+  avatarPicture String?       @map("avatar_picture")
+  capcha        String?       @default(uuid())
+  activated     Boolean       @default(false)
+  transactions  Transaction[]
+  campaigns     Campaign[]
+  kycInfor      KycInfor?
+}
 
-  @@map("users")
+model KycInfor {
+  id          Int       @id @default(autoincrement())
+  risk        KycRisk
+  status      KycStatus
+  submittedAt DateTime  @map("submitted_at")
+  updatedAt   DateTime  @map("updated_at")
+  userId      Int       @unique @map("user_id")
+  user        User      @relation(fields: [userId], references: [id])
+}
+
+model FileStorage {
+  id       Int      @id @default(autoincrement())
+  url      String
+  objectId Int      @map("object_id")
+  fileType FileType
+}
+
+model Category {
+  id        Int        @id @default(autoincrement())
+  name      String
+  campaigns Campaign[]
+}
+
+model Campaign {
+  id           Int           @id @default(autoincrement())
+  title        String
+  description  String?
+  localtion    String
+  startAt      DateTime      @map("start_at")
+  endAt        DateTime      @map("end_at")
+  goal         Float
+  investor     Int
+  creatorId    Int           @map("creator_id")
+  categoryId   Int           @map("category_id")
+  user         User          @relation(fields: [creatorId], references: [id])
+  category     Category      @relation(fields: [categoryId], references: [id])
+  transactions Transaction[]
+}
+
+model Transaction {
+  id             Int      @id @default(autoincrement())
+  amount         Int
+  bankName       String   @map("bank_name")
+  bankAccountInt String   @unique() @map("bank_account_Int")
+  bankerName     String   @map("banker_name")
+  bankerAddress  String   @map("banker_address")
+  bankerPhone    String   @map("banker_phone")
+  bankerZipCode  Int      @map("banker_zip_code")
+  bankerEmail    String   @map("banker_email")
+  paymentMethod  String   @map("payment_method")
+  note           String
+  status         String
+  fundDate       DateTime @map("fund_date")
+  updateDate     DateTime @map("update_date")
+  campaignId     Int      @map("campaign_id")
+  userId         Int      @map("user_id")
+  campaign       Campaign @relation(fields: [campaignId], references: [id])
+  user           User     @relation(fields: [userId], references: [id])
 }
 
 enum UserRole {
   INVESTOR
   ADMIN
   FUNDRASIER
+}
+
+enum FileType {
+  KYC_LEGAL_ID
+  CAMPAIGN_IMAGE
+}
+
+enum KycRisk {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum KycStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

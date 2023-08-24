@@ -1,4 +1,28 @@
 import { Injectable } from '@nestjs/common';
+import { User } from '@prisma/client';
+import { PrismaService } from '_modules_/prisma/prisma.service';
+import { CreateUserDto, UserResult } from './user.dto';
+import { exclude } from 'ultils/transform.ultil';
 
 @Injectable()
-export class UserService {}
+export class UserService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    return await this.prisma.user.create({
+      data: createUserDto
+    });
+  }
+
+  async findByEmail(email: string): Promise<UserResult> {
+    const find = await this.prisma.user.findUnique({
+      where: { email }
+    });
+    return exclude(find, ['password', 'refreshToken', 'expiredTime', 'capcha']);
+  }
+
+  async findOne(id: number): Promise<UserResult> {
+    const find = await this.prisma.user.findUnique({ where: { id } });
+    return exclude(find, ['password', 'refreshToken', 'expiredTime', 'capcha']);
+  }
+}
