@@ -1,9 +1,9 @@
-import { UserService } from './../user/user.service';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotAcceptableException } from '@nestjs/common';
 import { SignUpDto } from './auth.dto';
 import { PrismaService } from '_modules_/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { ValidationExeption } from 'exception/validation.exception';
+import { UserService } from '_modules_/user/user.service';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -13,23 +13,24 @@ export class AuthService {
 
   async signUp(signUpDto: SignUpDto) {
     const { email, firstName, lastName, password, role } = signUpDto;
-    const find = await this.userService.findByEmail(email);
-    if (!find) {
-      const bcryptSalt = +process.env.BCRYPT_SALT;
-      const hash = await bcrypt.hash(password, bcryptSalt);
-      const sendUser = {
-        email,
-        password: hash,
-        firstName,
-        lastName,
-        displayName: `${firstName} ${lastName}`,
-        role
-      };
-      const createdUser = await this.userService.create(sendUser);
-      //Send Email or Message to validate user with capcha in user
-      return { msg: 'you have signed up' };
-    } else {
-      throw new ValidationExeption('Email has already been registered!');
-    }
+    const user = await this.userService.findByEmail(email);
+
+    if (user)
+      throw new NotAcceptableException('Email has already been registered!');
+
+    const hash = await bcrypt.hash(password, 8);
+
+    const sendUser = {
+      email,
+      password: hash,
+      firstName,
+      lastName,
+      displayName: `${firstName} ${lastName}`,
+      role
+    };
+
+    await this.userService.create(sendUser);
+
+    return { msg: 'you have signed up' };
   }
 }
