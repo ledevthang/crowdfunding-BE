@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
-import { IsEmail, IsEnum, IsNotEmpty, IsStrongPassword } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty } from 'class-validator';
 
 export class SignUpDto {
   @ApiProperty({
@@ -25,7 +25,6 @@ export class SignUpDto {
   @ApiProperty({
     description: 'This is a required property'
   })
-  @IsStrongPassword()
   @IsNotEmpty()
   password: string;
 
@@ -35,4 +34,21 @@ export class SignUpDto {
   })
   @IsEnum(UserRole)
   role: UserRole;
+}
+
+export class SignInDto {
+  @ApiProperty()
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  password: string;
+}
+
+export class RenewDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  refreshToken: string;
 }
