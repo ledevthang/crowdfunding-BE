@@ -11,24 +11,25 @@ datasource db {
 }
 
 model User {
-  id            Int           @id @default(autoincrement())
-  email         String        @unique
-  firstName     String        @map("first_name")
-  lastName      String        @map("last_name")
-  displayName   String        @map("display_name")
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  firstName     String    @map("first_name")
+  lastName      String    @map("last_name")
+  displayName   String    @map("display_name")
   password      String
-  dateOfBirth   DateTime?     @map("date_of_birth")
+  dateOfBirth   DateTime? @map("date_of_birth")
   phoneNumber   String?
-  streetAddress String?       @map("street_address")
+  streetAddress String?   @map("street_address")
   country       String?
   city          String?
-  stateProvince String?       @map("state_province")
+  stateProvince String?   @map("state_province")
   zip           String?
   role          UserRole
-  refreshToken  String?       @map("refresh_token")
-  avatarPicture String?       @map("avatar_picture")
-  activated     Boolean       @default(false)
+  refreshToken  String?   @map("refresh_token")
+  avatarPicture String?   @map("avatar_picture")
+  activated     Boolean   @default(false)
   kycInfor      KycInfor?
+
   @@map("user")
 }
 
@@ -40,6 +41,7 @@ model KycInfor {
   updatedAt   DateTime  @map("updated_at")
   userId      Int       @unique @map("user_id")
   user        User      @relation(fields: [userId], references: [id])
+
   @@map("kyc_infor")
 }
 
@@ -48,6 +50,7 @@ model FileStorage {
   url      String
   objectId Int      @map("object_id")
   fileType FileType
+
   @@map("file_storage")
 }
 
