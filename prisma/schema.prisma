@@ -29,6 +29,7 @@ model User {
   avatarPicture String?       @map("avatar_picture")
   activated     Boolean       @default(false)
   kycInfor      KycInfor?
+  @@map("user")
 }
 
 model KycInfor {
@@ -39,6 +40,7 @@ model KycInfor {
   updatedAt   DateTime  @map("updated_at")
   userId      Int       @unique @map("user_id")
   user        User      @relation(fields: [userId], references: [id])
+  @@map("kyc_infor")
 }
 
 model FileStorage {
@@ -46,6 +48,7 @@ model FileStorage {
   url      String
   objectId Int      @map("object_id")
   fileType FileType
+  @@map("file_storage")
 }
 
 enum UserRole {
