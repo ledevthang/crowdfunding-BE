@@ -9,7 +9,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:local": "dotenv -e ./env/.local.env node dist/main",
+    "start:local": "dotenv -e ./env/.local.env nest start --watch",
     "db:push:local": "dotenv -e ./env/.local.env npx prisma db push",
     "start:watch": "nest start --watch",
     "start:dev": "dotenv -e ./env/.dev.env node dist/main",

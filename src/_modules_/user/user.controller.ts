@@ -1,12 +1,9 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 
 @Controller('users')
+@ApiTags('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.userService.findOne(id);
-  }
 }
