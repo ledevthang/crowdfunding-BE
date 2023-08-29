@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Campaign } from '@prisma/client';
 import { PrismaService } from '_modules_/prisma/prisma.service';
 import { FindCampaignDto, FindCampaignsResultDto } from './campaign.dto';
 
@@ -10,8 +9,8 @@ export class CampaignService {
   async find(
     findCampaignDto: FindCampaignDto
   ): Promise<FindCampaignsResultDto> {
-    const { page, size, query, order } = findCampaignDto;
-    const findPage = page || 1
+    const { page, size, order } = findCampaignDto;
+    const findPage = page || 1;
     const findSize = size ? size : 10;
     const skip = findPage ? (findPage - 1) * findSize : 0;
 

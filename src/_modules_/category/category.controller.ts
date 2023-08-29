@@ -10,12 +10,12 @@ export class CategoryController {
 
   @Get()
   find() {
-    return this.categoryService.find()
+    return this.categoryService.find();
   }
 
   @Post()
   @Auth('ADMIN')
   create(@Body() name: string) {
-    return this.categoryService.create(name)
+    return this.categoryService.create(name);
   }
 }
