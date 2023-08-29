@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsInterger } from 'decorators/validator.decorator';
 
 export class BasePagingResponse<T> {
   data: T[];
@@ -12,9 +13,11 @@ export class BasePagingDto {
   @ApiProperty({
     description: 'Number of page'
   })
+  @IsInterger
   readonly page: number = 1;
   @ApiProperty({
     description: 'Number of records per page'
   })
+  @IsInterger
   readonly size: number = 10;
 }
