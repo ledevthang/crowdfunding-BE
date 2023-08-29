@@ -1,28 +1,55 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { User, UserRole } from '@prisma/client';
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { IsEmail } from 'class-validator';
+import { OptionalProperty } from 'decorators/validator.decorator';
 
 export class CreateUserDto {
-  @IsEmail()
-  @IsNotEmpty()
-  @ApiProperty()
   email: string;
 
-  @IsNotEmpty()
-  @ApiProperty()
   firstName: string;
 
-  @IsNotEmpty()
-  @ApiProperty()
   lastName: string;
 
-  @IsNotEmpty()
   displayName: string;
 
-  @IsNotEmpty()
-  @ApiProperty({ enum: UserRole })
   password: string;
+
   role: UserRole;
+}
+
+export class AccountUpdate {
+  @OptionalProperty()
+  firstName?: string;
+
+  @OptionalProperty()
+  lastName?: string;
+
+  @OptionalProperty()
+  @IsEmail()
+  email?: string;
+
+  @OptionalProperty()
+  telephoneNumber?: string;
+
+  @OptionalProperty()
+  address?: string;
+
+  @OptionalProperty()
+  town?: string;
+
+  @OptionalProperty()
+  postCode?: string;
+
+  @OptionalProperty()
+  country?: string;
+
+  @OptionalProperty()
+  avatarPicture?: string;
+
+  @OptionalProperty()
+  newPassword?: string;
+
+  @OptionalProperty()
+  currentPassword?: string;
 }
 
 export type UserResult = Omit<
