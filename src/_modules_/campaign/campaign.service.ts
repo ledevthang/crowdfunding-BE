@@ -9,26 +9,21 @@ export class CampaignService {
   async find(
     findCampaignDto: FindCampaignDto
   ): Promise<FindCampaignsResultDto> {
-    const { page, size, order } = findCampaignDto;
-    const findPage = page || 1;
-    const findSize = size ? size : 10;
-    const skip = findPage ? (findPage - 1) * findSize : 0;
+    const { page, size } = findCampaignDto;
+    const skip = (page - 1) * size;
 
     const [campaigns, count] = await Promise.all([
       this.prisma.campaign.findMany({
-        take: findSize,
+        take: size,
         skip: skip,
-        orderBy: {
-          id: order === 'desc' ? 'desc' : 'asc'
-        }
       }),
       await this.prisma.campaign.count()
     ]);
     return {
       data: campaigns,
-      page: findPage,
-      size: findSize,
-      totalPages: Math.ceil(count / findSize) || 0,
+      page: page,
+      size: size,
+      totalPages: Math.ceil(count / size) || 0,
       totalElement: count
     };
   }

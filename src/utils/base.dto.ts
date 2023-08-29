@@ -7,8 +7,6 @@ export class BasePagingResponse<T> {
 }
 
 export class BasePagingDto {
-  readonly page: number;
-  readonly size: number;
-  readonly query: string;
-  readonly order: string;
+  readonly page: number = 1;
+  readonly size: number = 10;
 }

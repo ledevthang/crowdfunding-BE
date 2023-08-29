@@ -66,10 +66,9 @@ model Campaign {
   currentAmount Float         @map("current_amount")
   investor      Int
   creatorId     Int           @map("creator_id")
-  categoryId    Int           @map("category_id")
   user          User          @relation(fields: [creatorId], references: [id])
-  category      Category      @relation(fields: [categoryId], references: [id])
-  campaignTags  CampaignTag[]
+  campaignTags  String[]
+  categoryCampaigns CategoryCampaign[]
 
   @@map("campaign")
 }
@@ -77,20 +76,22 @@ model Campaign {
 model Category {
   id        Int        @id @default(autoincrement())
   name      String
-  campaigns Campaign[]
+  categoryCampaigns CategoryCampaign[]
 
   @@map("category")
 }
 
-model CampaignTag {
-  id         Int      @id @default(autoincrement())
-  name       String
-  campaignId Int      @map("campaign_id")
-  campaigns  Campaign @relation(fields: [campaignId], references: [id])
+model CategoryCampaign {
+  categoryId Int @map("category_id")
+  campaignId Int @map("campaign_id")
 
-  @@map("campaign_tag")
+  category Category @relation(fields: [categoryId], references: [id])
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+
+  @@id([categoryId, campaignId])
+
+  @@map("category_campaign")
 }
-
 enum UserRole {
   INVESTOR
   ADMIN
