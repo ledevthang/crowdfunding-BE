@@ -11,24 +11,25 @@ datasource db {
 }
 
 model User {
-  id            Int       @id @default(autoincrement())
-  email         String    @unique
-  firstName     String    @map("first_name")
-  lastName      String    @map("last_name")
-  displayName   String    @map("display_name")
+  id            Int        @id @default(autoincrement())
+  email         String     @unique
+  firstName     String     @map("first_name")
+  lastName      String     @map("last_name")
+  displayName   String     @map("display_name")
   password      String
-  dateOfBirth   DateTime? @map("date_of_birth")
+  dateOfBirth   DateTime?  @map("date_of_birth")
   phoneNumber   String?
-  streetAddress String?   @map("street_address")
+  streetAddress String?    @map("street_address")
   country       String?
   city          String?
-  stateProvince String?   @map("state_province")
+  stateProvince String?    @map("state_province")
   zip           String?
   role          UserRole
-  refreshToken  String?   @map("refresh_token")
-  avatarPicture String?   @map("avatar_picture")
-  activated     Boolean   @default(false)
+  refreshToken  String?    @map("refresh_token")
+  avatarPicture String?    @map("avatar_picture")
+  activated     Boolean    @default(false)
   kycInfor      KycInfor?
+  campaign      Campaign[]
 
   @@map("user")
 }
@@ -54,6 +55,42 @@ model FileStorage {
   @@map("file_storage")
 }
 
+model Campaign {
+  id            Int           @id @default(autoincrement())
+  title         String
+  description   String?
+  localtion     String
+  startAt       DateTime      @map("start_at")
+  endAt         DateTime      @map("end_at")
+  goal          Float
+  currentAmount Float         @map("current_amount")
+  investor      Int
+  creatorId     Int           @map("creator_id")
+  categoryId    Int           @map("category_id")
+  user          User          @relation(fields: [creatorId], references: [id])
+  category      Category      @relation(fields: [categoryId], references: [id])
+  campaignTags  CampaignTag[]
+
+  @@map("campaign")
+}
+
+model Category {
+  id        Int        @id @default(autoincrement())
+  name      String
+  campaigns Campaign[]
+
+  @@map("category")
+}
+
+model CampaignTag {
+  id         Int      @id @default(autoincrement())
+  name       String
+  campaignId Int      @map("campaign_id")
+  campaigns  Campaign @relation(fields: [campaignId], references: [id])
+
+  @@map("campaign_tag")
+}
+
 enum UserRole {
   INVESTOR
   ADMIN
@@ -63,6 +100,7 @@ enum UserRole {
 enum FileType {
   KYC_LEGAL_ID
   CAMPAIGN_IMAGE
+  CAMPAIGN_BACKGROUND
 }
 
 enum KycRisk {
