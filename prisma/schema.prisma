@@ -50,6 +50,7 @@ model FileStorage {
   id       Int      @id @default(autoincrement())
   url      String
   objectId Int      @map("object_id")
+  uploadAt DateTime @default(now()) @map("upload_at")
   fileType FileType
 
   @@map("file_storage")
