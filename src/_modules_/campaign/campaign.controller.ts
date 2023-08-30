@@ -1,9 +1,9 @@
-import { Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { CampaignService } from './campaign.service';
 import { ApiTags } from '@nestjs/swagger';
 import { User } from 'decorators/user.decorator';
 import { Auth } from 'decorators/auth.decorator';
-import { FindCampaignDto } from './campaign.dto';
+import { CreateCampaignDto, FindCampaignDto } from './campaign.dto';
 
 @Controller('campaigns')
 @ApiTags('campaigns')
@@ -15,9 +15,14 @@ export class CampaignController {
     return await this.campaignService.find(findCampaignDto);
   }
 
+  @Get('/:id')
+  async findOne(@Param("id") id: string) {
+    return await this.campaignService.findOne(+id);
+  }
+
   @Post()
   @Auth('INVESTOR')
-  createCampaign(@User('id') userId: number) {
-    return userId;
+  async createCampaign(@User('id') userId: number, @Body() createCampaignDto: CreateCampaignDto) {
+    return await this.campaignService.create(userId, createCampaignDto);
   }
 }
