@@ -37,7 +37,7 @@ export class FileService {
     baseFileUploadDto: BaseFileUploadDto
   ) {
     const { objectId, fileType } = baseFileUploadDto;
-    const key = `${fileType}/${objectId}`;
+    const key = `${fileType}/${(new Date()).getTime()}`;
     const url = await this.uploadToS3(image.buffer, key);
     await this.prisma.fileStorage.create({
       data: {
