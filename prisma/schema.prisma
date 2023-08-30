@@ -56,27 +56,27 @@ model FileStorage {
 }
 
 model Campaign {
-  id            Int           @id @default(autoincrement())
+  id            Int                @id @default(autoincrement())
   title         String
   description   String?
   localtion     String
-  startAt       DateTime      @map("start_at")
-  endAt         DateTime      @map("end_at")
-  goal          Float
-  currentAmount Float         @map("current_amount")
-  investor      Int
-  creatorId     Int           @map("creator_id")
-  user          User          @relation(fields: [creatorId], references: [id])
-  campaignTags  String[]
-  categoryCampaigns CategoryCampaign[]
+  startAt       DateTime           @map("start_at")
+  endAt         DateTime           @map("end_at")
+  goal          Float              @default(0)
+  currentAmount Float              @default(0) @map("current_amount")
+  investor      Int                @default(0)
+  creatorId     Int                @map("creator_id")
+  user          User               @relation(fields: [creatorId], references: [id])
+  campaignTags  String[]           @default([])
+  categories    CategoryCampaign[]
 
   @@map("campaign")
 }
 
 model Category {
-  id        Int        @id @default(autoincrement())
+  id        Int                @id @default(autoincrement())
   name      String
-  categoryCampaigns CategoryCampaign[]
+  campaigns CategoryCampaign[]
 
   @@map("category")
 }
@@ -89,9 +89,9 @@ model CategoryCampaign {
   campaign Campaign @relation(fields: [campaignId], references: [id])
 
   @@id([categoryId, campaignId])
-
   @@map("category_campaign")
 }
+
 enum UserRole {
   INVESTOR
   ADMIN
