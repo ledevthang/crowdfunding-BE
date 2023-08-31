@@ -37,9 +37,9 @@ model User {
 model KycInfor {
   id          Int       @id @default(autoincrement())
   risk        KycRisk
-  status      KycStatus
-  submittedAt DateTime  @map("submitted_at")
-  updatedAt   DateTime  @map("updated_at")
+  status      KycStatus @default(PENDING)
+  submittedAt DateTime? @map("submitted_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
   userId      Int       @unique @map("user_id")
   user        User      @relation(fields: [userId], references: [id])
 
