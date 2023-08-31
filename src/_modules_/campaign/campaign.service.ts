@@ -5,7 +5,7 @@ import {
   FindCampaignDto,
   FindCampaignsResultDto
 } from './campaign.dto';
-import { Campaign } from '@prisma/client';
+import { Campaign, CampaignFileType } from '@prisma/client';
 import { FileService } from '_modules_/file/file.service';
 
 @Injectable()
@@ -35,27 +35,32 @@ export class CampaignService {
                 }
               }
             }
+          },
+          campaignFiles: {
+            select: {
+              url: true,
+              type: true
+            }
           }
         }
       }),
       await this.prisma.campaign.count()
     ]);
-    const result = await Promise.all(
-      campaigns.map(async campaign => {
-        return {
-          ...campaign,
-          categories: campaign.categories.map(category => category.category),
-          image: await this.fileService.findOne({
-            objectId: campaign.id,
-            fileType: 'CAMPAIGN_IMAGE'
-          }),
-          backgroundImage: await this.fileService.findOne({
-            objectId: campaign.id,
-            fileType: 'CAMPAIGN_BACKGROUND'
-          })
-        };
-      })
-    ) 
+    const result = campaigns.map(campaign => {
+      const newCampaign = {
+        ...campaign,
+        categories: campaign.categories.map(category => category.category),
+        imageUrl: campaign.campaignFiles.find(
+          item => item.type === CampaignFileType.IMAGE
+        )?.url,
+        backgroundUrl: campaign.campaignFiles.find(
+          item => item.type === CampaignFileType.BACKGROUND
+        )?.url
+      }
+      delete newCampaign.campaignFiles
+      return newCampaign;
+    });
+
     return {
       data: result,
       page: page,
@@ -78,21 +83,26 @@ export class CampaignService {
               }
             }
           }
+        },
+        campaignFiles: {
+          select: {
+            url: true,
+            type: true
+          }
         }
       }
     });
     const result = {
       ...campaign,
       categories: campaign.categories.map(category => category.category),
-      image: await this.fileService.findOne({
-        objectId: id,
-        fileType: 'CAMPAIGN_IMAGE'
-      }),
-      backgroundImage: await this.fileService.findOne({
-        objectId: id,
-        fileType: 'CAMPAIGN_BACKGROUND'
-      })
+      imageUrl: campaign.campaignFiles.find(
+        item => item.type === CampaignFileType.IMAGE
+      )?.url,
+      backgroundUrl: campaign.campaignFiles.find(
+        item => item.type === CampaignFileType.BACKGROUND
+      )?.url
     };
+    delete result.campaignFiles
     return result;
   }
 
@@ -105,7 +115,9 @@ export class CampaignService {
       endAt,
       goal,
       campaignTags,
-      categoryIds
+      categoryIds,
+      imageUrl,
+      backGroundUrl
     } = createCampaignDto;
     try {
       await this.prisma.campaign.create({
@@ -120,6 +132,18 @@ export class CampaignService {
           creatorId,
           categories: {
             create: categoryIds.map(id => ({ categoryId: id }))
+          },
+          campaignFiles: {
+            create: [
+              {
+                url: imageUrl,
+                type: CampaignFileType.IMAGE
+              },
+              {
+                url: backGroundUrl,
+                type: CampaignFileType.BACKGROUND
+              }
+            ]
           }
         }
       });

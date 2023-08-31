@@ -70,8 +70,20 @@ model Campaign {
   user          User               @relation(fields: [creatorId], references: [id])
   campaignTags  String[]           @default([])
   categories    CategoryCampaign[]
+  campaignFiles CampaignFile[]
 
   @@map("campaign")
+}
+
+model CampaignFile {
+  id         Int              @id @default(autoincrement())
+  url        String
+  campaignId Int              @map("campaign_id")
+  uploadAt   DateTime         @default(now()) @map("upload_at")
+  type       CampaignFileType @default(IMAGE)
+  campaign   Campaign         @relation(fields: [campaignId], references: [id])
+
+  @@map("campaign_file")
 }
 
 model Category {
@@ -115,4 +127,9 @@ enum KycStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum CampaignFileType {
+  IMAGE
+  BACKGROUND
 }
