@@ -40,6 +40,12 @@ export class CreateCampaignDto {
   @IsNumber()
   goal: number;
 
+  @ApiProperty({})
+  imageUrl: string;
+
+  @ApiProperty({})
+  backGroundUrl: string;
+
   campaignTags: string[];
 
   categoryIds: number[];
