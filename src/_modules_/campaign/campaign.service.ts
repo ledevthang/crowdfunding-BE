@@ -52,10 +52,10 @@ export class CampaignService {
         categories: campaign.categories.map(category => category.category),
         imageUrl: campaign.campaignFiles.find(
           item => item.type === CampaignFileType.IMAGE
-        )?.url,
+        )?.url || "",
         backgroundUrl: campaign.campaignFiles.find(
           item => item.type === CampaignFileType.BACKGROUND
-        )?.url
+        )?.url || ""
       }
       delete newCampaign.campaignFiles
       return newCampaign;
@@ -97,10 +97,10 @@ export class CampaignService {
       categories: campaign.categories.map(category => category.category),
       imageUrl: campaign.campaignFiles.find(
         item => item.type === CampaignFileType.IMAGE
-      )?.url,
+      )?.url || "",
       backgroundUrl: campaign.campaignFiles.find(
         item => item.type === CampaignFileType.BACKGROUND
-      )?.url
+      )?.url || ""
     };
     delete result.campaignFiles
     return result;
