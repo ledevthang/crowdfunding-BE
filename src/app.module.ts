@@ -9,6 +9,8 @@ import { CampaignModule } from './_modules_/campaign/campaign.module';
 import { CategoryModule } from './_modules_/category/category.module';
 import { S3Module } from 'nestjs-s3';
 import { FileModule } from '_modules_/file/file.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -25,6 +27,12 @@ import { FileModule } from '_modules_/file/file.module';
         }
       }),
       inject: [ConfigService]
+    }),
+    ScheduleModule.forRoot(),
+    HttpModule.register({
+      timeout: 5000,
+      maxRedirects: 5,
+      baseURL: 'http://localhost:8080'
     }),
     PrismaModule,
     UserModule,
