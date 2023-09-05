@@ -16,21 +16,14 @@ export class CampaignService {
   ): Promise<FindCampaignsResultDto> {
     const { page, size, query, sort, categoryIds } = findCampaignDto;
     const skip = (page - 1) * size;
-    const [sortField, sortOrder] = sort.split(',');
-    let categoryContidtion = {};
-    if (categoryIds) {
-      if (categoryIds.length === 1) {
-        categoryContidtion = {
-          categoryId: Number(categoryIds)
-        };
-      } else {
-        categoryContidtion = {
+    const [sortField, sortOrder] = sort;
+    const categoryConditions = categoryIds
+      ? {
           categoryId: {
             in: categoryIds.map(i => Number(i))
           }
-        };
-      }
-    }
+        }
+      : {};
     const [campaigns, count] = await Promise.all([
       this.prisma.campaign.findMany({
         take: size,
@@ -59,7 +52,7 @@ export class CampaignService {
             }
           ],
           categories: {
-            some: categoryContidtion
+            some: categoryConditions
           }
         },
         orderBy: {
@@ -74,7 +67,7 @@ export class CampaignService {
                   name: true
                 }
               }
-            },
+            }
           },
           campaignFiles: {
             select: {
