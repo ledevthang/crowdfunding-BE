@@ -5,26 +5,59 @@ import {
   FindCampaignDto,
   FindCampaignsResultDto
 } from './campaign.dto';
-import { Campaign, CampaignFileType } from '@prisma/client';
-import { FileService } from '_modules_/file/file.service';
+import { Campaign, CampaignFileType, Prisma } from '@prisma/client';
 
 @Injectable()
 export class CampaignService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly fileService: FileService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async find(
     findCampaignDto: FindCampaignDto
   ): Promise<FindCampaignsResultDto> {
-    const { page, size } = findCampaignDto;
+    const { page, size, query, sort, categoryIds } = findCampaignDto;
     const skip = (page - 1) * size;
+    const [sortField, sortOrder] = sort;
+    const campaignCondition : Prisma.CampaignWhereInput = {categories: {}}
 
+    if (query) {
+      campaignCondition.OR = [
+        {
+          title: {
+            contains: query
+          }
+        },
+        {
+          description: {
+            contains: query
+          }
+        },
+        {
+          localtion: {
+            contains: query
+          }
+        },
+        {
+          campaignTags: {
+            has: query
+          }
+        }
+      ]
+    }
+    if (categoryIds) {
+      campaignCondition.categories.some = {
+        categoryId: {
+          in: categoryIds
+        }
+      }
+    }
     const [campaigns, count] = await Promise.all([
       this.prisma.campaign.findMany({
         take: size,
         skip: skip,
+        where: campaignCondition,
+        orderBy: {
+          [sortField]: sortOrder
+        },
         include: {
           categories: {
             select: {
@@ -50,14 +83,16 @@ export class CampaignService {
       const newCampaign = {
         ...campaign,
         categories: campaign.categories.map(category => category.category),
-        imageUrl: campaign.campaignFiles.find(
-          item => item.type === CampaignFileType.IMAGE
-        )?.url || "",
-        backgroundUrl: campaign.campaignFiles.find(
-          item => item.type === CampaignFileType.BACKGROUND
-        )?.url || ""
-      }
-      delete newCampaign.campaignFiles
+        imageUrl:
+          campaign.campaignFiles.find(
+            item => item.type === CampaignFileType.IMAGE
+          )?.url || '',
+        backgroundUrl:
+          campaign.campaignFiles.find(
+            item => item.type === CampaignFileType.BACKGROUND
+          )?.url || ''
+      };
+      delete newCampaign.campaignFiles;
       return newCampaign;
     });
 
@@ -95,14 +130,16 @@ export class CampaignService {
     const result = {
       ...campaign,
       categories: campaign.categories.map(category => category.category),
-      imageUrl: campaign.campaignFiles.find(
-        item => item.type === CampaignFileType.IMAGE
-      )?.url || "",
-      backgroundUrl: campaign.campaignFiles.find(
-        item => item.type === CampaignFileType.BACKGROUND
-      )?.url || ""
+      imageUrl:
+        campaign.campaignFiles.find(
+          item => item.type === CampaignFileType.IMAGE
+        )?.url || '',
+      backgroundUrl:
+        campaign.campaignFiles.find(
+          item => item.type === CampaignFileType.BACKGROUND
+        )?.url || ''
     };
-    delete result.campaignFiles
+    delete result.campaignFiles;
     return result;
   }
 

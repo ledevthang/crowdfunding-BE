@@ -11,11 +11,13 @@ export class BasePagingResponse<T> {
 
 export class BasePagingDto {
   @ApiProperty({
+    required: false,
     description: 'Number of page'
   })
   @IsInterger
   readonly page: number = 1;
   @ApiProperty({
+    required: false,
     description: 'Number of records per page'
   })
   @IsInterger
