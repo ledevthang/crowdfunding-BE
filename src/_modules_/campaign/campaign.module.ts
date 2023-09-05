@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { CampaignService } from './campaign.service';
 import { CampaignController } from './campaign.controller';
-import { FileModule } from '_modules_/file/file.module';
 
 @Module({
-  imports: [FileModule],
+  imports: [],
   controllers: [CampaignController],
   providers: [CampaignService]
 })

@@ -3,7 +3,16 @@ import { Campaign } from '@prisma/client';
 import { IsDateString, IsNotEmpty, IsNumber } from 'class-validator';
 import { BasePagingDto, BasePagingResponse } from 'utils/base.dto';
 
-export class FindCampaignDto extends BasePagingDto {}
+export class FindCampaignDto extends BasePagingDto {
+  @ApiProperty({ required: false, description: 'Sort field and order. ex: title,asc' })
+  sort: string = 'id,asc';
+
+  @ApiProperty({ required: false, description: 'Search query' })
+  query: string = '';
+
+  @ApiProperty({ required: false, description: 'Category Ids. ex: [1,2,3]' })
+  categoryIds: number[];
+}
 
 export class FindCampaignsResultDto extends BasePagingResponse<Campaign> {}
 
@@ -46,7 +55,9 @@ export class CreateCampaignDto {
   @ApiProperty({})
   backGroundUrl: string;
 
+  @ApiProperty({})
   campaignTags: string[];
 
+  @ApiProperty({})
   categoryIds: number[];
 }
