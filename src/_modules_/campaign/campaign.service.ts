@@ -5,7 +5,7 @@ import {
   FindCampaignDto,
   FindCampaignsResultDto
 } from './campaign.dto';
-import { Campaign, CampaignFileType } from '@prisma/client';
+import { Campaign, CampaignFileType, Prisma } from '@prisma/client';
 
 @Injectable()
 export class CampaignService {
@@ -17,44 +17,44 @@ export class CampaignService {
     const { page, size, query, sort, categoryIds } = findCampaignDto;
     const skip = (page - 1) * size;
     const [sortField, sortOrder] = sort;
-    const categoryConditions = categoryIds
-      ? {
-          categoryId: {
-            in: categoryIds.map(i => Number(i))
+    const campaignCondition : Prisma.CampaignWhereInput = {categories: {}}
+
+    if (query) {
+      campaignCondition.OR = [
+        {
+          title: {
+            contains: query
+          }
+        },
+        {
+          description: {
+            contains: query
+          }
+        },
+        {
+          localtion: {
+            contains: query
+          }
+        },
+        {
+          campaignTags: {
+            has: query
           }
         }
-      : {};
+      ]
+    }
+    if (categoryIds) {
+      campaignCondition.categories.some = {
+        categoryId: {
+          in: categoryIds
+        }
+      }
+    }
     const [campaigns, count] = await Promise.all([
       this.prisma.campaign.findMany({
         take: size,
         skip: skip,
-        where: {
-          OR: [
-            {
-              title: {
-                contains: query
-              }
-            },
-            {
-              description: {
-                contains: query
-              }
-            },
-            {
-              localtion: {
-                contains: query
-              }
-            },
-            {
-              campaignTags: {
-                has: query
-              }
-            }
-          ],
-          categories: {
-            some: categoryConditions
-          }
-        },
+        where: campaignCondition,
         orderBy: {
           [sortField]: sortOrder
         },
