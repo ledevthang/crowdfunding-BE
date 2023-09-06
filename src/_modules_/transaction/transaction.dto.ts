@@ -1,16 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsInt } from 'class-validator';
 
 export class CreateTransactionDto {
-  @IsNotEmpty()
-  @IsNumber()
+  @IsInt()
   @ApiProperty({
     description: 'This is a required property'
   })
   amount: number;
 
-  @IsNotEmpty()
-  @IsNumber()
+  @IsInt()
   @ApiProperty({
     description: 'This is a required property'
   })

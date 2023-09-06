@@ -20,7 +20,7 @@ export class AppService {
     return 'Hello kitty';
   }
 
-  async kycMock(_userId: number): Promise<Mock> {
+  async kycMock(): Promise<Mock> {
     const rand = Math.floor(Math.random() * 3);
     return {
       risk: Object.values(KycRisk)[rand]
