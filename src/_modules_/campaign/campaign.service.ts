@@ -17,7 +17,7 @@ export class CampaignService {
     const { page, size, query, sort, categoryIds } = findCampaignDto;
     const skip = (page - 1) * size;
     const [sortField, sortOrder] = sort;
-    const campaignCondition : Prisma.CampaignWhereInput = {categories: {}}
+    const campaignCondition: Prisma.CampaignWhereInput = { categories: {} };
 
     if (query) {
       campaignCondition.OR = [
@@ -41,14 +41,14 @@ export class CampaignService {
             has: query
           }
         }
-      ]
+      ];
     }
     if (categoryIds) {
       campaignCondition.categories.some = {
         categoryId: {
           in: categoryIds
         }
-      }
+      };
     }
     const [campaigns, count] = await Promise.all([
       this.prisma.campaign.findMany({

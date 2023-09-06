@@ -37,7 +37,7 @@ export class FileService {
     baseFileUploadDto: BaseFileUploadDto
   ) {
     const { objectId, fileType } = baseFileUploadDto;
-    const key = `${fileType}/${(new Date()).getTime()}`;
+    const key = `${fileType}/${new Date().getTime()}`;
     const url = await this.uploadToS3(image.buffer, key);
     await this.prisma.fileStorage.create({
       data: {
@@ -60,7 +60,7 @@ export class FileService {
         url: true
       }
     });
-    return files.map(item => item.url)
+    return files.map(item => item.url);
   }
 
   async findOne(findFileDto: FindFileDto) {
@@ -74,10 +74,9 @@ export class FileService {
         url: true
       },
       orderBy: {
-        uploadAt: "desc"
+        uploadAt: 'desc'
       }
     });
-    console.log('findOne', findFileDto, file?.url || '')
-    return file?.url || ''
+    return file?.url || '';
   }
 }
