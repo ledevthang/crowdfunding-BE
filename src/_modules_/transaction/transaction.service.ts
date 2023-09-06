@@ -16,25 +16,26 @@ export class TransactionService {
           new Date().getTime() / 1000
         )}`,
         userId
-      }
-    });
-    const campaign = await this.prisma.campaign.findFirst({
-      where: {
-        id: campaignId
       },
-      include: {
-        campaignBank: {
+      select: {
+        generatedNote: true,
+        amount: true,
+        id: true,
+        campaign: {
           select: {
-            bankName: true,
-            accountHolderName: true,
-            bankNumber: true
+            campaignBank: {
+              select: {
+                bankName: true,
+                accountHolderName: true,
+                bankNumber: true
+              }
+            }
           }
         }
       }
     });
-    campaign.campaignBank;
     return {
-      ...campaign.campaignBank,
+      ...transaction.campaign.campaignBank,
       transactionId: transaction.id,
       amount: transaction.amount,
       note: transaction.generatedNote
@@ -46,17 +47,16 @@ export class TransactionService {
     const transaction = await this.prisma.transaction.findFirst({
       where: { id, userId }
     });
-    if (transaction) {
-      const updatedTransaction = await this.prisma.transaction.update({
-        where: { id },
-        data: {
-          completed: true,
-          updateDate: new Date()
-        }
-      });
-      return updatedTransaction;
-    } else {
+    if (!transaction) {
       throw new NotFoundException('Not found transaction!');
     }
+    const updatedTransaction = await this.prisma.transaction.update({
+      where: { id },
+      data: {
+        completed: true,
+        updateDate: new Date()
+      }
+    });
+    return updatedTransaction;
   }
 }
