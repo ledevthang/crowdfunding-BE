@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '_modules_/prisma/prisma.service';
 import { CreateTransactionDto } from './transaction.dto';
 
@@ -44,11 +44,14 @@ export class TransactionService {
 
   async complete(id: number, userId: number) {
     console.log(id, userId);
-    const transaction = await this.prisma.transaction.findFirst({
-      where: { id, userId }
+    const transaction = await this.prisma.transaction.findUnique({
+      where: { id }
     });
     if (!transaction) {
       throw new NotFoundException('Not found transaction!');
+    }
+    if (transaction.userId !== userId) {
+      throw new ForbiddenException("Transaction is not belong to current user!");
     }
     const updatedTransaction = await this.prisma.transaction.update({
       where: { id },
