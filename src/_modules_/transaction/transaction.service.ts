@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '_modules_/prisma/prisma.service';
 import { CreateTransactionDto, FindTransactionDto } from './transaction.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, Campaign } from '@prisma/client';
 
 @Injectable()
 export class TransactionService {
@@ -28,6 +28,7 @@ export class TransactionService {
         id: true,
         campaign: {
           select: {
+            title: true,
             campaignBank: {
               select: {
                 bankName: true,
@@ -41,6 +42,7 @@ export class TransactionService {
     });
     return {
       ...transaction.campaign.campaignBank,
+      campaignTitle: transaction.campaign.title,
       transactionId: transaction.id,
       amount: transaction.amount,
       note: transaction.generatedNote
@@ -48,11 +50,23 @@ export class TransactionService {
   }
 
   async find(findTransactionDto: FindTransactionDto, userId = undefined) {
-    const { page, size, campaignId, status } = findTransactionDto;
+    const {
+      page,
+      size,
+      campaignId,
+      minAmount,
+      maxAmount,
+      campaignTitle,
+      startDate,
+      endDate,
+      states
+    } = findTransactionDto;
     const skip = (page - 1) * size;
 
+    const amountCondition : Prisma.FloatFilter<"Transaction"> = {}
+
     const transactionCondition: Prisma.TransactionWhereInput = {
-      completed: true
+      completed: true,
     };
     if (campaignId) {
       transactionCondition.campaignId = campaignId;
@@ -62,23 +76,58 @@ export class TransactionService {
       transactionCondition.userId = userId;
     }
 
-    if (status) {
-      transactionCondition.status = {
-        in: status
+    if (maxAmount ) {
+      amountCondition.lte = maxAmount
+    }
+
+    if (minAmount) {
+      amountCondition.gte = minAmount
+    }
+
+    if (campaignTitle) {
+      transactionCondition.campaign.title = {
+        contains: campaignTitle,
+        mode: 'insensitive'
       };
     }
+
+    if (startDate && endDate) {
+      transactionCondition.updateDate = {
+        lte: endDate,
+        gte: startDate
+      };
+    }
+
+    if (states) {
+      transactionCondition.status = {
+        in: states
+      };
+    }
+
+    transactionCondition.amount = amountCondition
 
     const [transactions, count] = await Promise.all([
       this.prisma.transaction.findMany({
         where: transactionCondition,
+        include: {
+          campaign: {
+            select: {
+              title: true
+            }
+          }
+        },
         take: size,
         skip: skip
       }),
-      await this.prisma.transaction.count()
+      await this.prisma.transaction.count({ where: transactionCondition })
     ]);
-
+    const result = transactions.map(item => {
+      const newItem = { ...item, campaignTitle: item.campaign.title };
+      delete newItem.campaign;
+      return newItem;
+    });
     return {
-      data: transactions,
+      data: result,
       page: page,
       size: size,
       totalPages: Math.ceil(count / size) || 0,

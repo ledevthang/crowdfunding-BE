@@ -3,7 +3,9 @@ import { PrismaService } from '_modules_/prisma/prisma.service';
 import {
   CreateCampaignDto,
   FindCampaignDto,
-  FindCampaignsResultDto
+  FindCampaignsResultDto,
+  FindFundedCampaignDto,
+  FundedCampaignDto
 } from './campaign.dto';
 import { Campaign, CampaignFileType, Prisma } from '@prisma/client';
 
@@ -20,28 +22,10 @@ export class CampaignService {
     const campaignCondition: Prisma.CampaignWhereInput = { categories: {} };
 
     if (query) {
-      campaignCondition.OR = [
-        {
-          title: {
-            contains: query
-          }
-        },
-        {
-          description: {
-            contains: query
-          }
-        },
-        {
-          localtion: {
-            contains: query
-          }
-        },
-        {
-          campaignTags: {
-            has: query
-          }
-        }
-      ];
+      campaignCondition.title = {
+        contains: query,
+        mode: 'insensitive'
+      };
     }
     if (categoryIds) {
       campaignCondition.categories.some = {
@@ -77,7 +61,7 @@ export class CampaignService {
           }
         }
       }),
-      await this.prisma.campaign.count()
+      await this.prisma.campaign.count({ where: campaignCondition })
     ]);
     const result = campaigns.map(campaign => {
       const newCampaign = {
@@ -141,6 +125,97 @@ export class CampaignService {
     };
     delete result.campaignFiles;
     return result;
+  }
+
+  async findFundedCampaign(
+    userId: number,
+    findFundedCampaignDto: FindFundedCampaignDto
+  ): Promise<FundedCampaignDto> {
+    const {
+      page,
+      size,
+      minAmount,
+      maxAmount,
+      campaignTitle,
+      startDate,
+      endDate,
+      states
+    } = findFundedCampaignDto;
+
+    const campaignCondition: Prisma.CampaignWhereInput = {
+      transactions: {
+        some: {
+          userId,
+          completed: true
+        }
+      }
+    };
+
+    const goalCondition: Prisma.FloatFilter<"Campaign"> = {};
+
+    if (maxAmount) {
+      goalCondition.lte = maxAmount;
+    }
+
+    if (minAmount) {
+      goalCondition.gte = minAmount;
+    }
+
+    if (campaignTitle) {
+      campaignCondition.title = {
+        contains: campaignTitle,
+        mode: 'insensitive'
+      };
+    }
+
+    if (startDate && endDate) {
+      campaignCondition.endAt = {
+        lte: endDate,
+        gte: startDate
+      };
+    }
+
+    if (states) {
+      campaignCondition.status = {
+        in: states
+      };
+    }
+
+    campaignCondition.goal = goalCondition
+
+    const skip = (page - 1) * size;
+    const [campaigns, count] = await Promise.all([
+      await this.prisma.campaign.findMany({
+        take: size,
+        skip: skip,
+        where: campaignCondition
+      }),
+      await this.prisma.campaign.count({
+        where: {
+          transactions: {
+            some: {
+              userId,
+              completed: true
+            }
+          }
+        }
+      })
+    ]);
+
+    const result = campaigns.map(item => ({
+      id: item.id,
+      title: item.title,
+      goal: item.goal,
+      endAt: item.endAt,
+      status: item.status
+    }));
+    return {
+      data: result,
+      page: page,
+      size: size,
+      totalPages: Math.ceil(count / size) || 0,
+      totalElement: count
+    };
   }
 
   async create(creatorId: number, createCampaignDto: CreateCampaignDto) {

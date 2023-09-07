@@ -70,9 +70,10 @@ model Campaign {
   creatorId     Int                @map("creator_id")
   user          User               @relation(fields: [creatorId], references: [id])
   campaignTags  String[]           @default([])
+  status        FundCampaignStatus @default(ON_GOING)
   categories    CategoryCampaign[]
   campaignFiles CampaignFile[]
-  Transaction   Transaction[]
+  transactions   Transaction[]
   campaignBank  CampaignBank?
 
   @@map("campaign")
@@ -121,7 +122,7 @@ model CategoryCampaign {
 
 model Transaction {
   id            Int                      @id @default(autoincrement())
-  amount        Int
+  amount        Float
   paymentMethod TransactionPaymentMethod @default(BANK_TRANSFER) @map("payment_method")
   fundAt        DateTime                 @default(now()) @map("fund_at")
   status        TransactionStatus        @default(PENDING)
