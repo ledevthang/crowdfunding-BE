@@ -4,7 +4,8 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import { PrismaService } from '_modules_/prisma/prisma.service';
-import { CreateTransactionDto } from './transaction.dto';
+import { CreateTransactionDto, FindTransactionDto } from './transaction.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class TransactionService {
@@ -43,6 +44,45 @@ export class TransactionService {
       transactionId: transaction.id,
       amount: transaction.amount,
       note: transaction.generatedNote
+    };
+  }
+
+  async find(findTransactionDto: FindTransactionDto, userId = undefined) {
+    const { page, size, campaignId, status } = findTransactionDto;
+    const skip = (page - 1) * size;
+
+    const transactionCondition: Prisma.TransactionWhereInput = {
+      completed: true
+    };
+    if (campaignId) {
+      transactionCondition.campaignId = campaignId;
+    }
+
+    if (userId) {
+      transactionCondition.userId = userId;
+    }
+
+    if (status) {
+      transactionCondition.status = {
+        in: status
+      };
+    }
+
+    const [transactions, count] = await Promise.all([
+      this.prisma.transaction.findMany({
+        where: transactionCondition,
+        take: size,
+        skip: skip
+      }),
+      await this.prisma.transaction.count()
+    ]);
+
+    return {
+      data: transactions,
+      page: page,
+      size: size,
+      totalPages: Math.ceil(count / size) || 0,
+      totalElement: count
     };
   }
 
