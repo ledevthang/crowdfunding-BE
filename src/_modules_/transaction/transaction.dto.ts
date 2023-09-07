@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transaction, TransactionStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsInt } from 'class-validator';
+import { IsFloat, OptionalProperty } from 'decorators/validator.decorator';
 import { BasePagingDto, BasePagingResponse } from 'utils/base.dto';
 
 export class CreateTransactionDto {
@@ -18,18 +19,36 @@ export class CreateTransactionDto {
   campaignId: number;
 }
 
-export class FindTransactionResultDto extends BasePagingResponse<Transaction> {}
-
 export class FindTransactionDto extends BasePagingDto {
-  @ApiProperty({ required: false })
+  @OptionalProperty()
   @Transform(param => Number(param.value) || null)
-  campaignId: number;
+  campaignId?: number;
 
-  @ApiProperty({
+  @IsFloat
+  @OptionalProperty()
+  minAmount?: number;
+
+  @IsFloat
+  @OptionalProperty()
+  maxAmount?: number;
+
+  @OptionalProperty()
+  campaignTitle?: string;
+
+  @OptionalProperty()
+  startDate?: Date;
+
+  @OptionalProperty()
+  endDate?: Date;
+
+  @Transform(param => param.value.split(','))
+  @OptionalProperty({
     type: 'string',
     required: false,
-    description: 'Between 3 stauses: PENDING, PROCESSED, REFUNDED. Ex: PENDING,PROCESSED'
+    description:
+      'Between 3 stauses: PENDING, PROCESSED, REFUNDED. Ex: PENDING,PROCESSED'
   })
-  @Transform(param => param.value.split(','))
-  status: TransactionStatus[];
+  states?: TransactionStatus[];
 }
+
+export class FindTransactionResultDto extends BasePagingResponse<Transaction> {}

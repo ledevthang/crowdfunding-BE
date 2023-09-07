@@ -1,31 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Campaign } from '@prisma/client';
+import { Campaign, FundCampaignStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsDateString, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsFloat, OptionalProperty } from 'decorators/validator.decorator';
 import { BasePagingDto, BasePagingResponse } from 'utils/base.dto';
 
-export class FindCampaignDto extends BasePagingDto {
-  @ApiProperty({
-    type: 'string',
-    required: false,
-    description: 'Sort field and order. ex: title,asc'
-  })
-  @Transform(param => param.value.split(','))
-  sort: string[] = ['id', 'asc'];
+// TYPE //
+export type ShortCampaign = Pick<
+  Campaign,
+  'id' | 'title' | 'goal' | 'endAt' | 'status'
+>;
 
-  @ApiProperty({ required: false, description: 'Search query' })
-  query: string = '';
-
-  @ApiProperty({
-    type: 'string',
-    required: false,
-    description: 'Category Ids. ex: 1,2,3'
-  })
-  @Transform(param => param.value.split(',').map(i => Number(i)))
-  categoryIds: number[];
-}
-
-export class FindCampaignsResultDto extends BasePagingResponse<Campaign> {}
+// END TYPE //
 
 export class CreateCampaignDto {
   @ApiProperty({
@@ -72,3 +58,53 @@ export class CreateCampaignDto {
   @ApiProperty()
   categoryIds: number[];
 }
+export class FindCampaignDto extends BasePagingDto {
+  @OptionalProperty({
+    type: 'string',
+    required: false,
+    description: 'Sort field and order. ex: title,asc'
+  })
+  @Transform(param => param.value.split(','))
+  sort?: string[] = ['id', 'asc'];
+
+  @OptionalProperty({ description: 'Search query' })
+  query?: string = '';
+
+  @OptionalProperty({
+    type: 'string',
+    required: false,
+    description: 'Category Ids. ex: 1,2,3'
+  })
+  @Transform(param => param.value.split(',').map(i => Number(i)))
+  categoryIds?: number[];
+}
+
+export class FindCampaignsResultDto extends BasePagingResponse<Campaign> {}
+export class FindFundedCampaignDto extends BasePagingDto {
+  @IsFloat
+  @OptionalProperty()
+  minAmount?: number;
+
+  @IsFloat
+  @OptionalProperty()
+  maxAmount?: number;
+
+  @OptionalProperty()
+  campaignTitle?: string;
+
+  @OptionalProperty()
+  startDate?: Date;
+
+  @OptionalProperty()
+  endDate?: Date;
+
+  @OptionalProperty({
+    type: 'string',
+    required: false,
+    description: 'Between 3 stauses: ON_GOING, FAILED, SUCCEED.'
+  })
+  @Transform(param => param.value.split(','))
+  states?: FundCampaignStatus[];
+}
+
+export class FundedCampaignDto extends BasePagingResponse<ShortCampaign> {}
