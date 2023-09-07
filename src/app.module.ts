@@ -12,6 +12,7 @@ import { FileModule } from '_modules_/file/file.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
 import { KycModule } from './_modules_/kyc/kyc.module';
+import { TransactionModule } from './_modules_/transaction/transaction.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { KycModule } from './_modules_/kyc/kyc.module';
     CampaignModule,
     CategoryModule,
     FileModule,
+    TransactionModule,
     KycModule
   ],
   controllers: [AppController],
