@@ -1,7 +1,7 @@
-import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { User } from 'decorators/user.decorator';
-import { CreateTransactionDto } from './transaction.dto';
+import { CreateTransactionDto, FindTransactionDto } from './transaction.dto';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Auth } from 'decorators/auth.decorator';
 
@@ -24,5 +24,16 @@ export class TransactionController {
   @Auth('INVESTOR')
   async complete(@Param('id') id: number, @User('id') userId: number) {
     return this.transactionService.complete(id, userId);
+  }
+
+  @Get()
+  async find(@Query() findTransactionDto: FindTransactionDto) {
+    return this.transactionService.find(findTransactionDto)
+  }
+
+  @Get("/self")
+  @Auth('INVESTOR')
+  async findSelf(@Query() findTransactionDto: FindTransactionDto, @User('id') userId: number) {
+    return this.transactionService.find(findTransactionDto, userId)
   }
 }

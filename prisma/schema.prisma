@@ -167,10 +167,16 @@ enum CampaignFileType {
 
 enum TransactionStatus {
   PENDING
-  APPROVED
-  REJECTED
+  PROCESSED
+  REFUNDED
 }
 
 enum TransactionPaymentMethod {
   BANK_TRANSFER
+}
+
+enum FundCampaignStatus {
+  ON_GOING
+  FAILED
+  SUCCEED
 }
