@@ -16,13 +16,16 @@ export class CampaignController {
   }
 
   @Get('/:id')
-  async findOne(@Param("id") id: string) {
+  async findOne(@Param('id') id: string) {
     return await this.campaignService.findOne(+id);
   }
 
   @Post()
   @Auth('INVESTOR')
-  async createCampaign(@User('id') userId: number, @Body() createCampaignDto: CreateCampaignDto) {
+  async createCampaign(
+    @User('id') userId: number,
+    @Body() createCampaignDto: CreateCampaignDto
+  ) {
     return await this.campaignService.create(userId, createCampaignDto);
   }
 }

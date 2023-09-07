@@ -11,6 +11,7 @@ import { S3Module } from 'nestjs-s3';
 import { FileModule } from '_modules_/file/file.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
+import { KycModule } from './_modules_/kyc/kyc.module';
 
 @Module({
   imports: [
@@ -39,7 +40,8 @@ import { HttpModule } from '@nestjs/axios';
     AuthModule,
     CampaignModule,
     CategoryModule,
-    FileModule
+    FileModule,
+    KycModule
   ],
   controllers: [AppController],
   providers: [AppService]
