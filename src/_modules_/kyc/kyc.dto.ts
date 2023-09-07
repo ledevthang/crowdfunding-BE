@@ -15,7 +15,7 @@ export class KycUpdate {
   @ApiProperty()
   id: number;
 
-  @ApiProperty()
+  @ApiProperty({ enum: KycHandle })
   @IsEnum(KycHandle)
   action: KycHandle;
 }

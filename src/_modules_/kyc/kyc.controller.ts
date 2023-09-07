@@ -6,16 +6,17 @@ import { Auth } from 'decorators/auth.decorator';
 
 @Controller('kyc')
 @ApiTags('kyc')
-@Auth('ADMIN')
 export class KycController {
   constructor(private readonly kycService: KycService) {}
 
   @Get()
+  @Auth('ADMIN')
   getListKyc(@Query() query: KycQuery) {
     return this.kycService.findAll(query);
   }
 
   @Patch()
+  @Auth('ADMIN')
   update(@Body() body: KycUpdate) {
     return this.kycService.update(body);
   }
