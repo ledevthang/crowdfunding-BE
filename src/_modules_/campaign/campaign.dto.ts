@@ -5,56 +5,13 @@ import { IsDateString, IsNotEmpty, IsNumber } from 'class-validator';
 import { IsFloat, OptionalProperty } from 'decorators/validator.decorator';
 import { BasePagingDto, BasePagingResponse } from 'utils/base.dto';
 
-export class FindCampaignDto extends BasePagingDto {
-  @ApiProperty({
-    type: 'string',
-    required: false,
-    description: 'Sort field and order. ex: title,asc'
-  })
-  @Transform(param => param.value.split(','))
-  sort: string[] = ['id', 'asc'];
+// TYPE //
+export type ShortCampaign = Pick<
+  Campaign,
+  'id' | 'title' | 'goal' | 'endAt' | 'status'
+>;
 
-  @ApiProperty({ required: false, description: 'Search query' })
-  query: string = '';
-
-  @ApiProperty({
-    type: 'string',
-    required: false,
-    description: 'Category Ids. ex: 1,2,3'
-  })
-  @Transform(param => param.value.split(',').map(i => Number(i)))
-  categoryIds: number[];
-}
-
-export class FindCampaignsResultDto extends BasePagingResponse<Campaign> {}
-export class FindFundedCampaignDto extends BasePagingDto {
-  @ApiProperty({ required: false })
-  @IsFloat
-  @OptionalProperty()
-  minAmount: number;
-
-  @ApiProperty({ required: false })
-  @IsFloat
-  @OptionalProperty()
-  maxAmount: number;
-
-  @ApiProperty({ required: false })
-  campaignTitle: string;
-
-  @ApiProperty({ required: false })
-  startDate: Date;
-
-  @ApiProperty({ required: false })
-  endDate: Date;
-
-  @ApiProperty({
-    type: 'string',
-    required: false,
-    description: 'Between 3 stauses: ON_GOING, FAILED, SUCCEED.'
-  })
-  @Transform(param => param.value.split(','))
-  states: FundCampaignStatus[];
-}
+// END TYPE //
 
 export class CreateCampaignDto {
   @ApiProperty({
@@ -101,10 +58,62 @@ export class CreateCampaignDto {
   @ApiProperty()
   categoryIds: number[];
 }
+export class FindCampaignDto extends BasePagingDto {
+  @ApiProperty({
+    type: 'string',
+    required: false,
+    description: 'Sort field and order. ex: title,asc'
+  })
+  @OptionalProperty()
+  @Transform(param => param.value.split(','))
+  sort?: string[] = ['id', 'asc'];
 
-export type ShortCampaign = Pick<
-  Campaign,
-  'id' | 'title' | 'goal' | 'endAt' | 'status'
->;
+  @ApiProperty({ required: false, description: 'Search query' })
+  @OptionalProperty()
+  query?: string = '';
+
+  @ApiProperty({
+    type: 'string',
+    required: false,
+    description: 'Category Ids. ex: 1,2,3'
+  })
+  @OptionalProperty()
+  @Transform(param => param.value.split(',').map(i => Number(i)))
+  categoryIds?: number[];
+}
+
+export class FindCampaignsResultDto extends BasePagingResponse<Campaign> {}
+export class FindFundedCampaignDto extends BasePagingDto {
+  @ApiProperty({ required: false })
+  @IsFloat
+  @OptionalProperty()
+  minAmount?: number;
+
+  @ApiProperty({ required: false })
+  @IsFloat
+  @OptionalProperty()
+  maxAmount?: number;
+
+  @ApiProperty({ required: false })
+  @OptionalProperty()
+  campaignTitle?: string;
+
+  @ApiProperty({ required: false })
+  @OptionalProperty()
+  startDate?: Date;
+
+  @ApiProperty({ required: false })
+  @OptionalProperty()
+  endDate?: Date;
+
+  @ApiProperty({
+    type: 'string',
+    required: false,
+    description: 'Between 3 stauses: ON_GOING, FAILED, SUCCEED.'
+  })
+  @OptionalProperty()
+  @Transform(param => param.value.split(','))
+  states?: FundCampaignStatus[];
+}
 
 export class FundedCampaignDto extends BasePagingResponse<ShortCampaign> {}

@@ -188,6 +188,13 @@ export class CampaignService {
       await this.prisma.campaign.findMany({
         take: size,
         skip: skip,
+        select: {
+          id: true,
+          title: true,
+          goal: true,
+          endAt: true,
+          status: true,
+        },
         where: campaignCondition
       }),
       await this.prisma.campaign.count({
@@ -201,16 +208,8 @@ export class CampaignService {
         }
       })
     ]);
-
-    const result = campaigns.map(item => ({
-      id: item.id,
-      title: item.title,
-      goal: item.goal,
-      endAt: item.endAt,
-      status: item.status
-    }));
     return {
-      data: result,
+      data: campaigns,
       page: page,
       size: size,
       totalPages: Math.ceil(count / size) || 0,

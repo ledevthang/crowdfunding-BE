@@ -19,31 +19,33 @@ export class CreateTransactionDto {
   campaignId: number;
 }
 
-export class FindTransactionResultDto extends BasePagingResponse<Transaction> {}
-
 export class FindTransactionDto extends BasePagingDto {
   @ApiProperty({ required: false })
+  @OptionalProperty()
   @Transform(param => Number(param.value) || null)
-  campaignId: number;
+  campaignId?: number;
 
   @ApiProperty({ required: false })
   @IsFloat
   @OptionalProperty()
-  minAmount: number;
+  minAmount?: number;
 
   @ApiProperty({ required: false })
   @IsFloat
   @OptionalProperty()
-  maxAmount: number;
+  maxAmount?: number;
 
   @ApiProperty({ required: false })
-  campaignTitle: string;
+  @OptionalProperty()
+  campaignTitle?: string;
 
   @ApiProperty({ required: false })
-  startDate: Date;
+  @OptionalProperty()
+  startDate?: Date;
 
   @ApiProperty({ required: false })
-  endDate: Date;
+  @OptionalProperty()
+  endDate?: Date;
 
   @ApiProperty({
     type: 'string',
@@ -51,5 +53,8 @@ export class FindTransactionDto extends BasePagingDto {
     description: 'Between 3 stauses: PENDING, PROCESSED, REFUNDED. Ex: PENDING,PROCESSED'
   })
   @Transform(param => param.value.split(','))
-  states: TransactionStatus[];
+  @OptionalProperty()
+  states?: TransactionStatus[];
 }
+
+export class FindTransactionResultDto extends BasePagingResponse<Transaction> {}
