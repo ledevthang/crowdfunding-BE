@@ -77,6 +77,7 @@ export class FileService {
         uploadAt: 'desc'
       }
     });
+    console.log('findOne', findFileDto, file?.url || '');
     return file?.url || '';
   }
 }
