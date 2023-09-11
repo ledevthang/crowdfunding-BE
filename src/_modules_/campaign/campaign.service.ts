@@ -21,12 +21,11 @@ export class CampaignService {
     const skip = (page - 1) * size;
     const [sortField, sortOrder] = sort;
     const campaignCondition: Prisma.CampaignWhereInput = { categories: {} };
+    const titleCondition: Prisma.StringFilter = {};
 
     if (query) {
-      campaignCondition.title = {
-        contains: query,
-        mode: 'insensitive'
-      };
+      titleCondition.contains = query;
+      titleCondition.mode = 'insensitive';
     }
     if (categoryIds) {
       campaignCondition.categories.some = {
@@ -52,6 +51,7 @@ export class CampaignService {
       };
     }
 
+    campaignCondition.title = titleCondition;
     campaignCondition.endAt = dateCondition;
     const [campaigns, count] = await Promise.all([
       this.prisma.campaign.findMany({
@@ -286,6 +286,7 @@ export class CampaignService {
       await this.prisma.campaign.delete({ where: { id } });
       return { message: 'success' };
     } catch (error) {
+      console.log(error);
       return {
         message:
           error.code === 'P2025' ? 'Record to delete does not exist.' : 'fail!'
