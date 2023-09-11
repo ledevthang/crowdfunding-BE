@@ -20,6 +20,19 @@ export class FileService {
     return { url };
   }
 
+  async uploadKycImages(images: Array<Express.Multer.File>, user: Claims) {
+    const urls = new Array();
+    for (let image of images) {
+      const url = await this.uploadToS3(
+        image.buffer,
+        generateS3ObjectKey('kyc', user.id, true)
+      );
+      urls.push(url);
+    }
+
+    return { urls };
+  }
+
   private async uploadToS3(file: Buffer, key: string) {
     await this.s3.putObject({
       Bucket: process.env.AWS_BUCKET_NAME,
