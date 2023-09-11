@@ -151,14 +151,16 @@ export class CampaignService {
       }
     };
 
-    const goalCondition: Prisma.FloatFilter<'Campaign'> = {};
+    if (maxAmount || minAmount) {
+      const ids = await this.findCampaignsByAmountFunded(
+        userId,
+        minAmount,
+        maxAmount
+      );
 
-    if (maxAmount) {
-      goalCondition.lte = maxAmount;
-    }
-
-    if (minAmount) {
-      goalCondition.gte = minAmount;
+      campaignCondition.id = {
+        in: ids
+      };
     }
 
     if (campaignTitle) {
@@ -181,8 +183,6 @@ export class CampaignService {
       };
     }
 
-    campaignCondition.goal = goalCondition;
-
     const skip = (page - 1) * size;
     const [campaigns, count] = await Promise.all([
       await this.prisma.campaign.findMany({
@@ -198,14 +198,7 @@ export class CampaignService {
         where: campaignCondition
       }),
       await this.prisma.campaign.count({
-        where: {
-          transactions: {
-            some: {
-              userId,
-              completed: true
-            }
-          }
-        }
+        where: campaignCondition
       })
     ]);
     return {
@@ -269,7 +262,27 @@ export class CampaignService {
       await this.prisma.campaign.delete({ where: { id } });
       return { message: 'success' };
     } catch (error) {
-      return { message: error.code === 'P2025' ? 'Record to delete does not exist.' : 'fail!' };
+      return {
+        message:
+          error.code === 'P2025' ? 'Record to delete does not exist.' : 'fail!'
+      };
     }
+  }
+
+  private async findCampaignsByAmountFunded(userId: number, min = 0, max = 0) {
+    const campaigns = await this.prisma.$queryRaw<Array<{ id: number }>>`
+      select "c"."id" 
+      from "crowdf"."campaign" "c"
+      left join "crowdf"."transaction" "t" on "t"."campaign_id" = "c"."id" 
+        and "t"."completed" = true
+        and "t"."status"::text = 'PROCESSED'
+        and "t"."user_id" = ${userId}
+      group by "c"."id"
+      having sum("t"."amount") between ${min} and ${max}
+    `;
+
+    const ids = campaigns.map(c => c.id);
+
+    return ids;
   }
 }
