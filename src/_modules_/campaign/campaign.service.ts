@@ -21,12 +21,11 @@ export class CampaignService {
     const skip = (page - 1) * size;
     const [sortField, sortOrder] = sort;
     const campaignCondition: Prisma.CampaignWhereInput = { categories: {} };
+    const titleCondition: Prisma.StringFilter = {};
 
     if (query) {
-      campaignCondition.title = {
-        contains: query,
-        mode: 'insensitive'
-      };
+      titleCondition.contains = query;
+      titleCondition.mode = 'insensitive';
     }
     if (categoryIds) {
       campaignCondition.categories.some = {
@@ -52,6 +51,7 @@ export class CampaignService {
       };
     }
 
+    campaignCondition.title = titleCondition;
     campaignCondition.endAt = dateCondition;
     const [campaigns, count] = await Promise.all([
       this.prisma.campaign.findMany({
@@ -283,28 +283,6 @@ export class CampaignService {
 
   async delete(id: number) {
     try {
-      await Promise.all([
-        this.prisma.transaction.deleteMany({
-          where: {
-            campaignId: id
-          }
-        }),
-        this.prisma.campaignBank.deleteMany({
-          where: {
-            campaignId: id
-          }
-        }),
-        this.prisma.campaignFile.deleteMany({
-          where: {
-            campaignId: id
-          }
-        }),
-        this.prisma.categoryCampaign.deleteMany({
-          where: {
-            campaignId: id
-          }
-        })
-      ]);
       await this.prisma.campaign.delete({ where: { id } });
       return { message: 'success' };
     } catch (error) {
