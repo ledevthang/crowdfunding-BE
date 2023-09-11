@@ -16,16 +16,16 @@ export class CampaignService {
   async find(
     findCampaignDto: FindCampaignDto
   ): Promise<FindCampaignsResultDto> {
-    const { page, size, query, sort, categoryIds } = findCampaignDto;
+    const { page, size, query, sort, startDate, endDate, categoryIds, states } =
+      findCampaignDto;
     const skip = (page - 1) * size;
     const [sortField, sortOrder] = sort;
     const campaignCondition: Prisma.CampaignWhereInput = { categories: {} };
+    const titleCondition: Prisma.StringFilter = {};
 
     if (query) {
-      campaignCondition.title = {
-        contains: query,
-        mode: 'insensitive'
-      };
+      titleCondition.contains = query;
+      titleCondition.mode = 'insensitive';
     }
     if (categoryIds) {
       campaignCondition.categories.some = {
@@ -34,6 +34,25 @@ export class CampaignService {
         }
       };
     }
+
+    const dateCondition: Prisma.DateTimeFilter<'Campaign'> = {};
+
+    if (startDate) {
+      dateCondition.gte = startDate;
+    }
+
+    if (endDate) {
+      dateCondition.lte = endDate;
+    }
+
+    if (states) {
+      campaignCondition.status = {
+        in: states
+      };
+    }
+
+    campaignCondition.title = titleCondition;
+    campaignCondition.endAt = dateCondition;
     const [campaigns, count] = await Promise.all([
       this.prisma.campaign.findMany({
         take: size,
@@ -170,11 +189,14 @@ export class CampaignService {
       };
     }
 
-    if (startDate && endDate) {
-      campaignCondition.endAt = {
-        lte: endDate,
-        gte: startDate
-      };
+    const dateCondition: Prisma.DateTimeFilter<'Campaign'> = {};
+
+    if (startDate) {
+      dateCondition.gte = startDate;
+    }
+
+    if (endDate) {
+      dateCondition.lte = endDate;
     }
 
     if (states) {
@@ -182,6 +204,8 @@ export class CampaignService {
         in: states
       };
     }
+
+    campaignCondition.endAt = dateCondition;
 
     const skip = (page - 1) * size;
     const [campaigns, count] = await Promise.all([
@@ -262,6 +286,7 @@ export class CampaignService {
       await this.prisma.campaign.delete({ where: { id } });
       return { message: 'success' };
     } catch (error) {
+      console.log(error);
       return {
         message:
           error.code === 'P2025' ? 'Record to delete does not exist.' : 'fail!'

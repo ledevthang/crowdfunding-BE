@@ -76,6 +76,7 @@ model Campaign {
   endAt         DateTime           @map("end_at")
   goal          Float              @default(0)
   currentAmount Float              @default(0) @map("current_amount")
+  progress      Float              @default(0) @map("progress")
   investor      Int                @default(0)
   creatorId     Int                @map("creator_id")
   user          User               @relation(fields: [creatorId], references: [id])
@@ -95,7 +96,7 @@ model CampaignBank {
   accountHolderName String   @map("account_holder_name")
   bankNumber        String   @map("bank_number")
   campaignId        Int      @unique @map("campaign_id")
-  campaign          Campaign @relation(fields: [campaignId], references: [id])
+  campaign          Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   @@map("campaign_bank")
 }
@@ -106,7 +107,7 @@ model CampaignFile {
   campaignId Int              @map("campaign_id")
   uploadAt   DateTime         @default(now()) @map("upload_at")
   type       CampaignFileType @default(IMAGE)
-  campaign   Campaign         @relation(fields: [campaignId], references: [id])
+  campaign   Campaign         @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   @@map("campaign_file")
 }
@@ -124,7 +125,7 @@ model CategoryCampaign {
   campaignId Int @map("campaign_id")
 
   category Category @relation(fields: [categoryId], references: [id])
-  campaign Campaign @relation(fields: [campaignId], references: [id])
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   @@id([categoryId, campaignId])
   @@map("category_campaign")
@@ -141,7 +142,7 @@ model Transaction {
   userId        Int                      @map("user_id")
   completed     Boolean                  @default(false)
   campaignId    Int                      @map("campaign_id")
-  campaign      Campaign                 @relation(fields: [campaignId], references: [id])
+  campaign      Campaign                 @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   user          User                     @relation(fields: [userId], references: [id])
 
   @@map("transaction")
