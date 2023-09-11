@@ -151,7 +151,7 @@ export class CampaignService {
       }
     };
 
-    const goalCondition: Prisma.FloatFilter<"Campaign"> = {};
+    const goalCondition: Prisma.FloatFilter<'Campaign'> = {};
 
     if (maxAmount) {
       goalCondition.lte = maxAmount;
@@ -181,7 +181,7 @@ export class CampaignService {
       };
     }
 
-    campaignCondition.goal = goalCondition
+    campaignCondition.goal = goalCondition;
 
     const skip = (page - 1) * size;
     const [campaigns, count] = await Promise.all([
@@ -193,7 +193,7 @@ export class CampaignService {
           title: true,
           goal: true,
           endAt: true,
-          status: true,
+          status: true
         },
         where: campaignCondition
       }),
@@ -261,6 +261,15 @@ export class CampaignService {
       return { message: 'success' };
     } catch (error) {
       return { message: 'fail!' };
+    }
+  }
+
+  async delete(id: number) {
+    try {
+      await this.prisma.campaign.delete({ where: { id } });
+      return { message: 'success' };
+    } catch (error) {
+      return { message: error.code === 'P2025' ? 'Record to delete does not exist.' : 'fail!' };
     }
   }
 }
