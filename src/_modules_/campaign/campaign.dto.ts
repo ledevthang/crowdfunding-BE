@@ -70,6 +70,12 @@ export class FindCampaignDto extends BasePagingDto {
   @OptionalProperty({ description: 'Search query' })
   query?: string = '';
 
+  @OptionalProperty()
+  startDate?: Date;
+
+  @OptionalProperty()
+  endDate?: Date;
+
   @OptionalProperty({
     type: 'string',
     required: false,
@@ -77,6 +83,14 @@ export class FindCampaignDto extends BasePagingDto {
   })
   @Transform(param => param.value.split(',').map(i => Number(i)))
   categoryIds?: number[];
+
+  @OptionalProperty({
+    type: 'string',
+    required: false,
+    description: 'Between 3 stauses: ON_GOING, FAILED, SUCCEED.'
+  })
+  @Transform(param => param.value.split(','))
+  states?: FundCampaignStatus[];
 }
 
 export class FindCampaignsResultDto extends BasePagingResponse<Campaign> {}

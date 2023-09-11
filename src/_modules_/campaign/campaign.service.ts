@@ -16,7 +16,8 @@ export class CampaignService {
   async find(
     findCampaignDto: FindCampaignDto
   ): Promise<FindCampaignsResultDto> {
-    const { page, size, query, sort, categoryIds } = findCampaignDto;
+    const { page, size, query, sort, startDate, endDate, categoryIds, states } =
+      findCampaignDto;
     const skip = (page - 1) * size;
     const [sortField, sortOrder] = sort;
     const campaignCondition: Prisma.CampaignWhereInput = { categories: {} };
@@ -34,6 +35,24 @@ export class CampaignService {
         }
       };
     }
+
+    const dateCondition: Prisma.DateTimeFilter<'Campaign'> = {};
+
+    if (startDate) {
+      dateCondition.gte = startDate;
+    }
+
+    if (endDate) {
+      dateCondition.lte = endDate;
+    }
+
+    if (states) {
+      campaignCondition.status = {
+        in: states
+      };
+    }
+
+    campaignCondition.endAt = dateCondition;
     const [campaigns, count] = await Promise.all([
       this.prisma.campaign.findMany({
         take: size,
@@ -170,11 +189,14 @@ export class CampaignService {
       };
     }
 
-    if (startDate && endDate) {
-      campaignCondition.endAt = {
-        lte: endDate,
-        gte: startDate
-      };
+    const dateCondition: Prisma.DateTimeFilter<'Campaign'> = {};
+
+    if (startDate) {
+      dateCondition.gte = startDate;
+    }
+
+    if (endDate) {
+      dateCondition.lte = endDate;
     }
 
     if (states) {
@@ -182,6 +204,8 @@ export class CampaignService {
         in: states
       };
     }
+
+    campaignCondition.endAt = dateCondition;
 
     const skip = (page - 1) * size;
     const [campaigns, count] = await Promise.all([

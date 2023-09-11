@@ -66,6 +66,7 @@ model Campaign {
   endAt         DateTime           @map("end_at")
   goal          Float              @default(0)
   currentAmount Float              @default(0) @map("current_amount")
+  progress      Float              @default(0) @map("progress")
   investor      Int                @default(0)
   creatorId     Int                @map("creator_id")
   user          User               @relation(fields: [creatorId], references: [id])
@@ -73,7 +74,7 @@ model Campaign {
   status        FundCampaignStatus @default(ON_GOING)
   categories    CategoryCampaign[]
   campaignFiles CampaignFile[]
-  transactions   Transaction[]
+  transactions  Transaction[]
   campaignBank  CampaignBank?
 
   @@map("campaign")
