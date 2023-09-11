@@ -269,20 +269,27 @@ export class CampaignService {
     }
   }
 
-  private async findCampaignsByAmountFunded(userId: number, min = 0, max = 0) {
-    const campaigns = await this.prisma.$queryRaw<Array<{ id: number }>>`
-      select "c"."id" 
-      from "crowdf"."campaign" "c"
-      left join "crowdf"."transaction" "t" on "t"."campaign_id" = "c"."id" 
-        and "t"."completed" = true
-        and "t"."status"::text = 'PROCESSED'
-        and "t"."user_id" = ${userId}
-      group by "c"."id"
-      having sum("t"."amount") between ${min} and ${max}
-    `;
-
-    const ids = campaigns.map(c => c.id);
-
-    return ids;
+  private async findCampaignsByAmountFunded(
+    userId: number,
+    min?: number,
+    max?: number
+  ) {
+    const txns = await this.prisma.transaction.groupBy({
+      by: ['campaignId'],
+      where: {
+        status: 'PROCESSED',
+        userId,
+        completed: true
+      },
+      having: {
+        amount: {
+          _sum: {
+            gt: min,
+            lt: max
+          }
+        }
+      }
+    });
+    return txns.map(t => t.campaignId);
   }
 }
