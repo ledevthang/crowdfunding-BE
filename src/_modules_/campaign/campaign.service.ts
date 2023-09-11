@@ -283,9 +283,32 @@ export class CampaignService {
 
   async delete(id: number) {
     try {
+      await Promise.all([
+        this.prisma.transaction.deleteMany({
+          where: {
+            campaignId: id
+          }
+        }),
+        this.prisma.campaignBank.deleteMany({
+          where: {
+            campaignId: id
+          }
+        }),
+        this.prisma.campaignFile.deleteMany({
+          where: {
+            campaignId: id
+          }
+        }),
+        this.prisma.categoryCampaign.deleteMany({
+          where: {
+            campaignId: id
+          }
+        })
+      ]);
       await this.prisma.campaign.delete({ where: { id } });
       return { message: 'success' };
     } catch (error) {
+      console.log(error);
       return {
         message:
           error.code === 'P2025' ? 'Record to delete does not exist.' : 'fail!'
