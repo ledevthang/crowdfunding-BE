@@ -151,14 +151,16 @@ export class CampaignService {
       }
     };
 
-    const goalCondition: Prisma.FloatFilter<'Campaign'> = {};
+    if (maxAmount || minAmount) {
+      const ids = await this.findCampaignsByAmountFunded(
+        userId,
+        minAmount,
+        maxAmount
+      );
 
-    if (maxAmount) {
-      goalCondition.lte = maxAmount;
-    }
-
-    if (minAmount) {
-      goalCondition.gte = minAmount;
+      campaignCondition.id = {
+        in: ids
+      };
     }
 
     if (campaignTitle) {
@@ -181,8 +183,6 @@ export class CampaignService {
       };
     }
 
-    campaignCondition.goal = goalCondition;
-
     const skip = (page - 1) * size;
     const [campaigns, count] = await Promise.all([
       await this.prisma.campaign.findMany({
@@ -198,14 +198,7 @@ export class CampaignService {
         where: campaignCondition
       }),
       await this.prisma.campaign.count({
-        where: {
-          transactions: {
-            some: {
-              userId,
-              completed: true
-            }
-          }
-        }
+        where: campaignCondition
       })
     ]);
     return {
@@ -269,7 +262,34 @@ export class CampaignService {
       await this.prisma.campaign.delete({ where: { id } });
       return { message: 'success' };
     } catch (error) {
-      return { message: error.code === 'P2025' ? 'Record to delete does not exist.' : 'fail!' };
+      return {
+        message:
+          error.code === 'P2025' ? 'Record to delete does not exist.' : 'fail!'
+      };
     }
+  }
+
+  private async findCampaignsByAmountFunded(
+    userId: number,
+    min?: number,
+    max?: number
+  ) {
+    const txns = await this.prisma.transaction.groupBy({
+      by: ['campaignId'],
+      where: {
+        status: 'PROCESSED',
+        userId,
+        completed: true
+      },
+      having: {
+        amount: {
+          _sum: {
+            gt: min,
+            lt: max
+          }
+        }
+      }
+    });
+    return txns.map(t => t.campaignId);
   }
 }
