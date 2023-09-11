@@ -76,7 +76,7 @@ export class FileController {
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: KycImagesUpload })
   @UseInterceptors(FilesInterceptor('images'))
-  @Auth('FUNDRASIER')
+  @Auth('NORMAL')
   uploadKycImages(
     @UploadedFiles(
       new ParseFilePipe({
