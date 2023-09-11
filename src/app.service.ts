@@ -47,15 +47,11 @@ export class AppService {
         users.map(async user => {
           const { risk } = await this.getKyc(user.id);
 
-          return this.prisma.kycInfor.upsert({
+          return this.prisma.kycInfor.update({
             where: {
               userId: user.id
             },
-            create: {
-              risk,
-              userId: user.id
-            },
-            update: {
+            data: {
               risk
             }
           });

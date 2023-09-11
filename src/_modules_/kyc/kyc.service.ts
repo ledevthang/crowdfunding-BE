@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '_modules_/prisma/prisma.service';
-import { KycQuery, KycUpdate } from './kyc.dto';
+import { KycCreate, KycQuery, KycUpdate } from './kyc.dto';
 import { BasePagingResponse } from 'utils/base.dto';
 import { KycInfor, KycStatus } from '@prisma/client';
 
@@ -62,5 +62,52 @@ export class KycService {
         status: newStatus
       }
     });
+  }
+
+  async create(body: KycCreate, userId: number) {
+    const {
+      city,
+      country,
+      dateOfBirth,
+      email,
+      firstName,
+      lastName,
+      phoneNumber,
+      stateProvince,
+      streetAddress,
+      zip,
+      images
+    } = body;
+
+    await this.prisma.user.update({
+      where: {
+        id: userId
+      },
+      data: {
+        city,
+        country,
+        dateOfBirth,
+        firstName,
+        lastName,
+        phoneNumber,
+        stateProvince,
+        streetAddress,
+        zip,
+        kycInfor: {
+          create: {
+            risk: 'LOW',
+            kycImages: {
+              createMany: {
+                data: images.map(i => ({ url: i }))
+              }
+            }
+          }
+        }
+      }
+    });
+
+    return {
+      msg: 'ok'
+    };
   }
 }

@@ -1,3 +1,4 @@
+import { FileTypeValidator, MaxFileSizeValidator } from '@nestjs/common';
 import { ApiPropertyOptional, ApiPropertyOptions } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsInt, IsNumber, IsOptional } from 'class-validator';
@@ -30,4 +31,19 @@ export function IsInterger(target: Object, propertyKey: string | symbol) {
 export function IsFloat(target: Object, propertyKey: string | symbol) {
   Type(() => Number)(target, propertyKey);
   IsNumber()(target, propertyKey);
+}
+
+export class MultipleMaxFilesSizeValidator extends MaxFileSizeValidator {
+  isValid(files: any): boolean {
+    console.log('files: ', files);
+    return (files as Express.Multer.File[]).every(f => super.isValid(f));
+  }
+}
+
+export class MultipleFilesTypeSizeValidator extends FileTypeValidator {
+  isValid(files: any): boolean {
+    console.log('ofiles: ', files);
+
+    return (files as Express.Multer.File[]).every(f => super.isValid(f));
+  }
 }
