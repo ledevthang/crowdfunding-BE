@@ -79,7 +79,7 @@ export class KycService {
       images
     } = body;
 
-    return await this.prisma.user.update({
+    await this.prisma.user.update({
       where: {
         id: userId
       },
@@ -87,7 +87,6 @@ export class KycService {
         city,
         country,
         dateOfBirth,
-        email,
         firstName,
         lastName,
         phoneNumber,
@@ -106,5 +105,9 @@ export class KycService {
         }
       }
     });
+
+    return {
+      msg: 'ok'
+    };
   }
 }
