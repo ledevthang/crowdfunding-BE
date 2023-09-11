@@ -12,9 +12,6 @@ export class RolesGuard implements CanActivate {
 
     const user: Claims = request.user;
 
-    console.log('user.role', user.role);
-    console.log('role', role);
-
     if (role === 'NORMAL')
       return user.role === 'FUNDRASIER' || user.role === 'INVESTOR';
 
