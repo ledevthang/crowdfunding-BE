@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '_modules_/prisma/prisma.service';
 import { CreateTransactionDto, FindTransactionDto } from './transaction.dto';
-import { Prisma, Campaign } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class TransactionService {
@@ -63,10 +63,11 @@ export class TransactionService {
     } = findTransactionDto;
     const skip = (page - 1) * size;
 
-    const amountCondition : Prisma.FloatFilter<"Transaction"> = {}
+    const amountCondition: Prisma.FloatFilter<'Transaction'> = {};
+    const campaignCondition: Prisma.CampaignWhereInput = {};
 
     const transactionCondition: Prisma.TransactionWhereInput = {
-      completed: true,
+      completed: true
     };
     if (campaignId) {
       transactionCondition.campaignId = campaignId;
@@ -76,16 +77,16 @@ export class TransactionService {
       transactionCondition.userId = userId;
     }
 
-    if (maxAmount ) {
-      amountCondition.lte = maxAmount
+    if (maxAmount) {
+      amountCondition.lte = maxAmount;
     }
 
     if (minAmount) {
-      amountCondition.gte = minAmount
+      amountCondition.gte = minAmount;
     }
 
     if (campaignTitle) {
-      transactionCondition.campaign.title = {
+      campaignCondition.title = {
         contains: campaignTitle,
         mode: 'insensitive'
       };
@@ -104,7 +105,8 @@ export class TransactionService {
       };
     }
 
-    transactionCondition.amount = amountCondition
+    transactionCondition.amount = amountCondition;
+    transactionCondition.campaign = campaignCondition;
 
     const [transactions, count] = await Promise.all([
       this.prisma.transaction.findMany({
@@ -133,6 +135,12 @@ export class TransactionService {
       totalPages: Math.ceil(count / size) || 0,
       totalElement: count
     };
+  }
+
+  findOne(id: number) {
+    return this.prisma.transaction.findUnique({
+      where: { id }
+    });
   }
 
   async complete(id: number, userId: number) {
