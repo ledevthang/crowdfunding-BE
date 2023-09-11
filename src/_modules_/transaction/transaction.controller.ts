@@ -26,6 +26,8 @@ export class TransactionController {
     return this.transactionService.complete(id, userId);
   }
 
+  
+
   @Get()
   async find(@Query() findTransactionDto: FindTransactionDto) {
     return this.transactionService.find(findTransactionDto)
@@ -35,5 +37,10 @@ export class TransactionController {
   @Auth('INVESTOR')
   async findSelf(@Query() findTransactionDto: FindTransactionDto, @User('id') userId: number) {
     return this.transactionService.find(findTransactionDto, userId)
+  }
+
+  @Get('/:id')
+  async findOne(@Param('id') id: number) {
+    return this.transactionService.findOne(id);
   }
 }
