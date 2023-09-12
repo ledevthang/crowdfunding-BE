@@ -4,8 +4,8 @@ import { OptionalProperty } from 'decorators/validator.decorator';
 import { BasePagingDto } from 'utils/base.dto';
 
 const KycHandle = {
-  APPROVE: 'APPROVE',
-  REJECT: 'REJECT'
+  APPROVE: 'APPROVED',
+  REJECT: 'REJECTED'
 } as const;
 
 const KycStatus = {
