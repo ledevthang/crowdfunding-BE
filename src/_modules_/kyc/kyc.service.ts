@@ -93,7 +93,8 @@ export class KycService {
 
   async update(body: KycUpdate) {
     const { action, id } = body;
-    const newStatus: KycStatus = action === 'APPROVE' ? 'APPROVED' : 'REJECTED';
+    const newStatus: KycStatus =
+      action === 'APPROVED' ? 'APPROVED' : 'REJECTED';
 
     return await this.prisma.kycInfor.update({
       where: {
