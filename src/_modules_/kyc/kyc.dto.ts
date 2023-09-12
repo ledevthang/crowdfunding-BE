@@ -5,7 +5,7 @@ import { BasePagingDto } from 'utils/base.dto';
 
 const KycHandle = {
   APPROVE: 'APPROVE',
-  REJECTE: 'REJECTE'
+  REJECT: 'REJECT'
 } as const;
 
 const KycStatus = {
@@ -17,7 +17,8 @@ const KycStatus = {
 const SortField = {
   RISK: 'risk',
   STATUS: 'status',
-  DATE: 'updatedAt'
+  DATE: 'updatedAt',
+  NAME: 'displayName'
 } as const;
 
 const SortOrder = {
