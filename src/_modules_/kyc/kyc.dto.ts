@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty } from 'class-validator';
+import { OptionalProperty } from 'decorators/validator.decorator';
 import { BasePagingDto } from 'utils/base.dto';
 
 const KycHandle = {
@@ -7,9 +8,62 @@ const KycHandle = {
   REJECTE: 'REJECTE'
 } as const;
 
-type KycHandle = (typeof KycHandle)[keyof typeof KycHandle];
+const KycStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTE: 'REJECTED'
+} as const;
 
-export class KycQuery extends BasePagingDto {}
+const SortField = {
+  RISK: 'risk',
+  STATUS: 'status',
+  DATE: 'updatedAt'
+} as const;
+
+const SortOrder = {
+  ASC: 'asc',
+  DESC: 'desc'
+} as const;
+
+type KycHandle = (typeof KycHandle)[keyof typeof KycHandle];
+type KycStatus = (typeof KycStatus)[keyof typeof KycStatus];
+type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
+type SortField = (typeof SortField)[keyof typeof SortField];
+
+export class KycQuery extends BasePagingDto {
+  @OptionalProperty()
+  keywords?: string;
+
+  @OptionalProperty({
+    type: 'string',
+    required: false,
+    description: 'Between 3 stauses: PENDING, APPROVED, REJECTED'
+  })
+  @IsEnum(KycStatus)
+  status: KycStatus;
+
+  @OptionalProperty({
+    type: 'string',
+    required: false,
+    description: 'Between 3 stauses: risk, status, updatedAt'
+  })
+  @IsEnum(SortField)
+  sortField: SortField;
+
+  @OptionalProperty({
+    type: 'string',
+    required: false,
+    description: 'asc or desc'
+  })
+  @IsEnum(SortOrder)
+  sortOrder: SortOrder;
+
+  @OptionalProperty()
+  startDate?: Date;
+
+  @OptionalProperty()
+  endDate?: Date;
+}
 
 export class KycUpdate {
   @ApiProperty()

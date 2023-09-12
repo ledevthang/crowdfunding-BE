@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Patch, Post, Query } from '@nestjs/common';
-import { KycService } from './kyc.service';
 import { ApiTags } from '@nestjs/swagger';
-import { KycCreate, KycQuery, KycUpdate } from './kyc.dto';
 import { Auth } from 'decorators/auth.decorator';
 import { User } from 'decorators/user.decorator';
+import { KycCreate, KycQuery, KycUpdate } from './kyc.dto';
+import { KycService } from './kyc.service';
 
 @Controller('kyc')
 @ApiTags('kyc')

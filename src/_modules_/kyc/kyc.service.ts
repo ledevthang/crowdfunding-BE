@@ -2,21 +2,53 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '_modules_/prisma/prisma.service';
 import { KycCreate, KycQuery, KycUpdate } from './kyc.dto';
 import { BasePagingResponse } from 'utils/base.dto';
-import { KycInfor, KycStatus } from '@prisma/client';
+import { KycInfor, KycStatus, Prisma } from '@prisma/client';
 
 @Injectable()
 export class KycService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(query: KycQuery): Promise<BasePagingResponse<KycInfor>> {
-    const { page, size } = query;
+    const {
+      page,
+      size,
+      keywords,
+      status,
+      sortField,
+      sortOrder,
+      startDate,
+      endDate
+    } = query;
+
+    const kycCondition: Prisma.KycInforWhereInput = {};
+
+    if (keywords) {
+      kycCondition.user = {
+        displayName: {
+          contains: keywords,
+          mode: 'insensitive'
+        }
+      };
+    }
+
+    if (status) {
+      kycCondition.status = {
+        equals: status
+      };
+    }
+
+    if (startDate && endDate) {
+      kycCondition.updatedAt = {
+        lte: endDate,
+        gte: startDate
+      };
+    }
 
     const [data, totalElement] = await Promise.all([
       this.prisma.kycInfor.findMany({
-        where: {
-          user: {
-            role: 'FUNDRASIER'
-          }
+        where: kycCondition,
+        orderBy: {
+          [sortField]: sortOrder
         },
         include: {
           user: {
@@ -25,7 +57,9 @@ export class KycService {
               email: true,
               displayName: true,
               avatarPicture: true,
-              phoneNumber: true
+              phoneNumber: true,
+              lastName: true,
+              firstName: true
             }
           }
         },
@@ -33,11 +67,7 @@ export class KycService {
         skip: (page - 1) * size
       }),
       this.prisma.kycInfor.count({
-        where: {
-          user: {
-            role: 'FUNDRASIER'
-          }
-        }
+        where: kycCondition
       })
     ]);
 
@@ -69,7 +99,6 @@ export class KycService {
       city,
       country,
       dateOfBirth,
-      email,
       firstName,
       lastName,
       phoneNumber,
@@ -109,5 +138,13 @@ export class KycService {
     return {
       msg: 'ok'
     };
+  }
+
+  async delete(kycId: number) {
+    await this.prisma.kycInfor.delete({
+      where: {
+        id: kycId
+      }
+    });
   }
 }
