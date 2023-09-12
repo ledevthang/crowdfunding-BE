@@ -2,6 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { KycRisk } from '@prisma/client';
+import { MailService } from '_modules_/mail/mail.service';
 import { PrismaService } from '_modules_/prisma/prisma.service';
 import { catchError, firstValueFrom } from 'rxjs';
 
@@ -13,7 +14,8 @@ type Mock = {
 export class AppService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly http: HttpService
+    private readonly http: HttpService,
+    private readonly mailService: MailService
   ) {}
 
   getHello(): string {
@@ -78,5 +80,59 @@ export class AppService {
     );
 
     return data;
+  }
+
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async sendCpnStatusEmail() {
+    const CHUNK_SIZE = 10;
+    let i = 0;
+
+    while (true) {
+      let campaigns = await this.prisma.campaign.findMany({
+        orderBy: {
+          id: 'asc'
+        },
+        take: CHUNK_SIZE,
+        skip: i * CHUNK_SIZE,
+        select: {
+          endAt: true,
+          title: true,
+          progress: true,
+          user: {
+            select: {
+              email: true,
+              displayName: true
+            }
+          }
+        }
+      });
+
+      if (!campaigns.length) {
+        return;
+      }
+
+      campaigns = campaigns.filter(c => {
+        const end = c.endAt;
+        const now = new Date();
+
+        return (
+          end.getDate() === now.getDate() &&
+          end.getMonth() == now.getMonth() &&
+          end.getFullYear() === now.getFullYear()
+        );
+      });
+
+      await Promise.all(
+        campaigns.map(c =>
+          this.mailService.sendMailOnCpnEvent({
+            campaignTitle: c.title,
+            email: c.user.email,
+            event: c.progress < 100 ? 'fail' : 'succeed',
+            username: c.user.displayName
+          })
+        )
+      );
+      i++;
+    }
   }
 }

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query
+} from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { User } from 'decorators/user.decorator';
 import { CreateTransactionDto, FindTransactionDto } from './transaction.dto';
@@ -26,17 +34,18 @@ export class TransactionController {
     return this.transactionService.complete(id, userId);
   }
 
-  
-
   @Get()
   async find(@Query() findTransactionDto: FindTransactionDto) {
-    return this.transactionService.find(findTransactionDto)
+    return this.transactionService.find(findTransactionDto);
   }
 
-  @Get("/self")
+  @Get('/self')
   @Auth('INVESTOR')
-  async findSelf(@Query() findTransactionDto: FindTransactionDto, @User('id') userId: number) {
-    return this.transactionService.find(findTransactionDto, userId)
+  async findSelf(
+    @Query() findTransactionDto: FindTransactionDto,
+    @User('id') userId: number
+  ) {
+    return this.transactionService.find(findTransactionDto, userId);
   }
 
   @Get('/:id')

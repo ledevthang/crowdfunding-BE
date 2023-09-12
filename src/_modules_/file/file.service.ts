@@ -21,8 +21,8 @@ export class FileService {
   }
 
   async uploadKycImages(images: Array<Express.Multer.File>, user: Claims) {
-    const urls = new Array();
-    for (let image of images) {
+    const urls = [];
+    for (const image of images) {
       const url = await this.uploadToS3(
         image.buffer,
         generateS3ObjectKey('kyc', user.id, true)

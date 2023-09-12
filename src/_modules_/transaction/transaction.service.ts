@@ -6,10 +6,17 @@ import {
 import { PrismaService } from '_modules_/prisma/prisma.service';
 import { CreateTransactionDto, FindTransactionDto } from './transaction.dto';
 import { Prisma } from '@prisma/client';
+import { InjectQueue } from '@nestjs/bull';
+import { MailJobs, Queues, TxnQueuePayload } from 'types/queue.type';
+import { Queue } from 'bull';
 
 @Injectable()
 export class TransactionService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @InjectQueue(Queues.mail)
+    private readonly emailQueue: Queue<TxnQueuePayload>
+  ) {}
 
   async create(userId: number, createTransactionDto: CreateTransactionDto) {
     const { amount, campaignId } = createTransactionDto;
@@ -37,9 +44,25 @@ export class TransactionService {
               }
             }
           }
+        },
+        user: {
+          select: {
+            displayName: true,
+            email: true
+          }
         }
       }
     });
+
+    await this.emailQueue.add(MailJobs.TxnPending, {
+      accountHoldername: transaction.campaign.campaignBank.accountHolderName,
+      additionInfor: transaction.generatedNote,
+      amout: transaction.amount,
+      displayname: transaction.user.displayName,
+      email: transaction.user.email,
+      receivingAccount: transaction.campaign.campaignBank.bankNumber
+    });
+
     return {
       ...transaction.campaign.campaignBank,
       campaignTitle: transaction.campaign.title,

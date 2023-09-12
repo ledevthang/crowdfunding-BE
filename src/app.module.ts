@@ -13,6 +13,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { HttpModule } from '@nestjs/axios';
 import { KycModule } from './_modules_/kyc/kyc.module';
 import { TransactionModule } from './_modules_/transaction/transaction.module';
+import { BullModule } from '@nestjs/bull';
+import { MailModule } from '_modules_/mail/mail.module';
 
 @Module({
   imports: [
@@ -36,6 +38,12 @@ import { TransactionModule } from './_modules_/transaction/transaction.module';
       maxRedirects: 5,
       baseURL: 'http://localhost:8080'
     }),
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379
+      }
+    }),
     PrismaModule,
     UserModule,
     AuthModule,
@@ -43,7 +51,8 @@ import { TransactionModule } from './_modules_/transaction/transaction.module';
     CategoryModule,
     FileModule,
     TransactionModule,
-    KycModule
+    KycModule,
+    MailModule
   ],
   controllers: [AppController],
   providers: [AppService]

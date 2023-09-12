@@ -217,7 +217,17 @@ export class CampaignService {
           title: true,
           goal: true,
           endAt: true,
-          status: true
+          status: true,
+          transactions: {
+            select: {
+              amount: true
+            },
+            where: {
+              userId,
+              status: 'PROCESSED',
+              completed: true
+            }
+          }
         },
         where: campaignCondition
       }),
@@ -225,8 +235,25 @@ export class CampaignService {
         where: campaignCondition
       })
     ]);
+
+    const result = campaigns.map(c => {
+      const { endAt, goal, id, status, title, transactions } = c;
+      const fundedAmount = transactions.reduce(
+        (prev, cur) => prev + cur.amount,
+        0
+      );
+      return {
+        endAt,
+        goal,
+        id,
+        status,
+        title,
+        fundedAmount
+      };
+    });
+
     return {
-      data: campaigns,
+      data: result,
       page: page,
       size: size,
       totalPages: Math.ceil(count / size) || 0,

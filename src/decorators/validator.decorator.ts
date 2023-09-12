@@ -35,15 +35,12 @@ export function IsFloat(target: Object, propertyKey: string | symbol) {
 
 export class MultipleMaxFilesSizeValidator extends MaxFileSizeValidator {
   isValid(files: any): boolean {
-    console.log('files: ', files);
     return (files as Express.Multer.File[]).every(f => super.isValid(f));
   }
 }
 
 export class MultipleFilesTypeSizeValidator extends FileTypeValidator {
   isValid(files: any): boolean {
-    console.log('ofiles: ', files);
-
     return (files as Express.Multer.File[]).every(f => super.isValid(f));
   }
 }
