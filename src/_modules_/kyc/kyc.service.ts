@@ -21,6 +21,7 @@ export class KycService {
     } = query;
 
     const kycCondition: Prisma.KycInforWhereInput = {};
+    let kycOrderBy: Prisma.KycInforOrderByWithRelationInput = {};
 
     if (keywords) {
       kycCondition.user = {
@@ -44,12 +45,22 @@ export class KycService {
       };
     }
 
+    if (sortField && sortOrder) {
+      if (sortField === 'displayName') {
+        kycOrderBy.user = {
+          displayName: sortOrder
+        };
+      } else {
+        kycOrderBy = {
+          [sortField]: sortOrder
+        };
+      }
+    }
+
     const [data, totalElement] = await Promise.all([
       this.prisma.kycInfor.findMany({
         where: kycCondition,
-        orderBy: {
-          [sortField]: sortOrder
-        },
+        orderBy: kycOrderBy,
         include: {
           user: {
             select: {
