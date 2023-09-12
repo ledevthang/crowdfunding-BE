@@ -23,7 +23,6 @@ export class CampaignController {
   constructor(private readonly campaignService: CampaignService) {}
 
   @Get()
-  @Auth('ADMIN')
   async find(@Query() findCampaignDto: FindCampaignDto) {
     return await this.campaignService.find(findCampaignDto);
   }
