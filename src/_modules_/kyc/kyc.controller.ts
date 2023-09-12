@@ -11,7 +11,7 @@ export class KycController {
   constructor(private readonly kycService: KycService) {}
 
   @Get()
-  @Auth('ADMIN')
+  // @Auth('ADMIN')
   getListKyc(@Query() query: KycQuery) {
     return this.kycService.findAll(query);
   }
