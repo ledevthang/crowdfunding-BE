@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { User } from 'decorators/user.decorator';
 import { CreateTransactionDto, FindTransactionDto } from './transaction.dto';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Auth } from 'decorators/auth.decorator';
+import { Claims } from 'types/auth.type';
 
 @Controller('transactions')
 @ApiTags('transactions')
@@ -26,8 +27,6 @@ export class TransactionController {
     return this.transactionService.complete(id, userId);
   }
 
-  
-
   @Get()
   async find(@Query() findTransactionDto: FindTransactionDto) {
     return this.transactionService.find(findTransactionDto)
@@ -40,7 +39,8 @@ export class TransactionController {
   }
 
   @Get('/:id')
-  async findOne(@Param('id') id: number) {
-    return this.transactionService.findOne(id);
+  @Auth()
+  async findOne(@Param('id') id: number, @User() claims: Claims) {
+    return this.transactionService.findOne(id, claims);
   }
 }

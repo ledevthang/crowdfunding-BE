@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '_modules_/prisma/prisma.service';
 import { CreateTransactionDto, FindTransactionDto } from './transaction.dto';
 import { Prisma } from '@prisma/client';
+import { Claims } from 'types/auth.type';
 
 @Injectable()
 export class TransactionService {
@@ -137,10 +138,21 @@ export class TransactionService {
     };
   }
 
-  findOne(id: number) {
-    return this.prisma.transaction.findUnique({
-      where: { id }
+  async findOne(id: number, userClaims: Claims) {
+    const transactionCondition: Prisma.TransactionWhereUniqueInput = { id };
+    if (userClaims.role !== 'ADMIN') {
+      transactionCondition.userId = userClaims.id;
+    }
+
+    const transaction = await this.prisma.transaction.findUnique({
+      where: transactionCondition
     });
+
+    if (!transaction) {
+      throw new NotFoundException('Not found transaction!');
+    }
+
+    return transaction;
   }
 
   async complete(id: number, userId: number) {
