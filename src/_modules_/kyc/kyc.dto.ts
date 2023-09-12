@@ -17,7 +17,7 @@ const KycStatus = {
 const SortField = {
   RISK: 'risk',
   STATUS: 'status',
-  DATE: 'updatedAt',
+  DATE: 'submittedAt',
   NAME: 'displayName'
 } as const;
 
@@ -46,7 +46,7 @@ export class KycQuery extends BasePagingDto {
   @OptionalProperty({
     type: 'string',
     required: false,
-    description: 'Between 3 stauses: risk, status, updatedAt'
+    description: 'Between 3 stauses: risk, status, submittedAt'
   })
   @IsEnum(SortField)
   sortField: SortField;
