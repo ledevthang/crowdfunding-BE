@@ -135,12 +135,17 @@ export class KycService {
         streetAddress,
         zip,
         kycInfor: {
-          create: {
-            risk: 'LOW',
-            kycImages: {
-              createMany: {
-                data: images.map(i => ({ url: i }))
+          upsert: {
+            create: {
+              risk: 'LOW',
+              kycImages: {
+                createMany: {
+                  data: images.map(i => ({ url: i }))
+                }
               }
+            },
+            update: {
+              status: 'PENDING'
             }
           }
         }
