@@ -16,7 +16,6 @@ import { Claims } from 'types/auth.type';
 import { InjectQueue } from '@nestjs/bull';
 import { MailJobs, Queues, TxnQueuePayload } from 'types/queue.type';
 import { Queue } from 'bull';
-import { Console } from 'console';
 
 @Injectable()
 export class TransactionService {
