@@ -1,6 +1,10 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
-import { TxnPendingPayload, TxnSucceedPayload } from 'types/queue.type';
+import {
+  KycPayload,
+  TxnPendingPayload,
+  TxnSucceedPayload
+} from 'types/queue.type';
 
 @Injectable()
 export class MailService {
@@ -72,6 +76,87 @@ export class MailService {
                 <br />
                 Additional information: <strong>${additionInfor}</strong>
                 </p>
+                <p>Cheers,</p>
+                <p>The Crowdfunding team</p>
+            </body>
+            </html>
+          `
+    });
+  }
+
+  async sendMailOnKycPending(payload: KycPayload): Promise<void> {
+    const { displayname, email } = payload;
+
+    await this.mailerService.sendMail({
+      from: `crowdfunding platform`,
+      to: payload.email,
+      subject: `Crowdfunding Notification`,
+      html: `
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>Crowdfunding Notification</title>
+            </head>
+            <body>
+                <h2>Dear ${displayname || email}</h2>
+                <br />
+                <p>Your KYC profile has been received, the results will be sent to you soon.</p>
+                <br />
+                <p>Cheers,</p>
+                <p>The Crowdfunding team</p>
+            </body>
+            </html>
+          `
+    });
+  }
+
+  async sendMailOnKycApproved(payload: KycPayload): Promise<void> {
+    const { displayname, email } = payload;
+
+    await this.mailerService.sendMail({
+      from: `crowdfunding platform`,
+      to: payload.email,
+      subject: `Crowdfunding Notification`,
+      html: `
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>Crowdfunding Notification</title>
+            </head>
+            <body>
+                <h2>Dear ${displayname || email}</h2>
+                <br />
+                <p>Your KYC profile has been approved, now you can make investments in campaigns.</p>
+                <br />
+                <p>Cheers,</p>
+                <p>The Crowdfunding team</p>
+            </body>
+            </html>
+          `
+    });
+  }
+
+  async sendMailOnKycRejected(payload: KycPayload): Promise<void> {
+    const { displayname, email } = payload;
+
+    await this.mailerService.sendMail({
+      from: `crowdfunding platform`,
+      to: payload.email,
+      subject: `Crowdfunding Notification`,
+      html: `
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>Crowdfunding Notification</title>
+            </head>
+            <body>
+                <h2>Dear ${displayname || email}</h2>
+                <br />
+                <p>Your KYC profile has been approved, please contact the admin or perform KYC again to continue investing.</p>
+                <br />
                 <p>Cheers,</p>
                 <p>The Crowdfunding team</p>
             </body>

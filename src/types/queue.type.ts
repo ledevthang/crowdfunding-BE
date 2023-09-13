@@ -4,7 +4,10 @@ export const Queues = {
 
 export const MailJobs = {
   TxnSucceed: 'TxnSucceed',
-  TxnPending: 'TxnPending'
+  TxnPending: 'TxnPending',
+  KycPending: 'KycPending',
+  KycApproved: 'KycApproved',
+  KycRejected: 'KycRejected'
 } as const;
 
 export type TxnSucceedPayload = {
@@ -19,3 +22,9 @@ export type TxnSucceedPayload = {
 export type TxnPendingPayload = TxnSucceedPayload;
 
 export type TxnQueuePayload = TxnPendingPayload | TxnSucceedPayload;
+
+export type KycPayload = {
+  displayname: string;
+  email: string;
+};
+export type KycQueuePayload = KycPayload;
