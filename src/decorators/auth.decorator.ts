@@ -10,7 +10,7 @@ import { RolesGuard } from 'guards/role.guard';
 import { AuthRole } from 'types/auth.type';
 
 export function Auth(
-  role: AuthRole,
+  role: AuthRole = 'ALL',
   /* eslint-disable-next-line */
   ...AnyGuardElse: Array<Function | CanActivate>
 ) {

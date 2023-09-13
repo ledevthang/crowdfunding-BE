@@ -60,7 +60,8 @@ export class TransactionController {
   }
 
   @Get('/:id')
-  async findOne(@Param('id') id: number) {
-    return this.transactionService.findOne(id);
+  @Auth()
+  async findOne(@Param('id') id: number, @User('id') userId: number) {
+    return this.transactionService.findOne(id, userId);
   }
 }

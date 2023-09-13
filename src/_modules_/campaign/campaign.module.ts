@@ -5,6 +5,7 @@ import { CampaignController } from './campaign.controller';
 @Module({
   imports: [],
   controllers: [CampaignController],
-  providers: [CampaignService]
+  providers: [CampaignService],
+  exports: [CampaignService]
 })
 export class CampaignModule {}

@@ -32,15 +32,3 @@ export function IsFloat(target: Object, propertyKey: string | symbol) {
   Type(() => Number)(target, propertyKey);
   IsNumber()(target, propertyKey);
 }
-
-export class MultipleMaxFilesSizeValidator extends MaxFileSizeValidator {
-  isValid(files: any): boolean {
-    return (files as Express.Multer.File[]).every(f => super.isValid(f));
-  }
-}
-
-export class MultipleFilesTypeSizeValidator extends FileTypeValidator {
-  isValid(files: any): boolean {
-    return (files as Express.Multer.File[]).every(f => super.isValid(f));
-  }
-}

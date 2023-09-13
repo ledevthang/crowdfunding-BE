@@ -1,4 +1,6 @@
+import { CampaignService } from './../campaign/campaign.service';
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException
@@ -19,7 +21,8 @@ export class TransactionService {
   constructor(
     private readonly prisma: PrismaService,
     @InjectQueue(Queues.mail)
-    private readonly emailQueue: Queue<TxnQueuePayload>
+    private readonly emailQueue: Queue<TxnQueuePayload>,
+    private readonly campaignService: CampaignService
   ) {}
 
   async create(userId: number, createTransactionDto: CreateTransactionDto) {
@@ -77,14 +80,116 @@ export class TransactionService {
   }
 
   async update({ id, action }: UpdateTransactionDto) {
-    return await this.prisma.transaction.update({
-      where: {
-        id: id
-      },
-      data: {
-        status: action
-      }
+    const transaction = await this.prisma.transaction.findUnique({
+      where: { id }
     });
+    if (!transaction) {
+      throw new NotFoundException('Not found transaction');
+    }
+
+    if (transaction.status === action) {
+      throw new BadRequestException('Transaction has already been updated');
+    }
+
+    if (action !== 'PROCESSED') {
+      const updatedTransaction = await this.prisma.transaction.update({
+        where: {
+          id: id
+        },
+        data: {
+          status: action
+        },
+        select: {
+          generatedNote: true,
+          amount: true,
+          id: true,
+          campaign: {
+            select: {
+              title: true,
+              campaignBank: {
+                select: {
+                  bankName: true,
+                  accountHolderName: true,
+                  bankNumber: true
+                }
+              }
+            }
+          },
+          user: {
+            select: {
+              displayName: true,
+              email: true
+            }
+          }
+        }
+      });
+
+      await this.emailQueue.add(MailJobs.TxnPending, {
+        accountHoldername:
+          updatedTransaction.campaign.campaignBank.accountHolderName,
+        additionInfor: updatedTransaction.generatedNote,
+        amout: updatedTransaction.amount,
+        displayname: updatedTransaction.user.displayName,
+        email: updatedTransaction.user.email,
+        receivingAccount: updatedTransaction.campaign.campaignBank.bankNumber
+      });
+
+      return updatedTransaction;
+    }
+
+    const campaign = await this.campaignService.findOne(transaction.campaignId);
+    const currentAmount = campaign.currentAmount + transaction.amount;
+    const progress = Number(((currentAmount * 100) / campaign.goal).toFixed(3));
+
+    const [updatedTransaction] = await this.prisma.$transaction([
+      this.prisma.transaction.update({
+        where: {
+          id: id
+        },
+        data: {
+          status: action
+        },
+        select: {
+          generatedNote: true,
+          amount: true,
+          id: true,
+          campaign: {
+            select: {
+              title: true,
+              campaignBank: {
+                select: {
+                  bankName: true,
+                  accountHolderName: true,
+                  bankNumber: true
+                }
+              }
+            }
+          },
+          user: {
+            select: {
+              displayName: true,
+              email: true
+            }
+          }
+        }
+      }),
+      this.prisma.campaign.update({
+        where: { id },
+        data: { currentAmount, progress }
+      })
+    ]);
+
+    await this.emailQueue.add(MailJobs.TxnPending, {
+      accountHoldername:
+        updatedTransaction.campaign.campaignBank.accountHolderName,
+      additionInfor: updatedTransaction.generatedNote,
+      amout: updatedTransaction.amount,
+      displayname: updatedTransaction.user.displayName,
+      email: updatedTransaction.user.email,
+      receivingAccount: updatedTransaction.campaign.campaignBank.bankNumber
+    });
+
+    return updatedTransaction;
   }
 
   async find(findTransactionDto: FindTransactionDto, userId = undefined) {
@@ -180,10 +285,22 @@ export class TransactionService {
     };
   }
 
-  findOne(id: number) {
-    return this.prisma.transaction.findUnique({
+  async findOne(id: number, userId: number) {
+    const transaction = await this.prisma.transaction.findUnique({
       where: { id }
     });
+
+    if (!transaction) {
+      throw new NotFoundException('Not found transaction!');
+    }
+
+    if (transaction.userId !== userId) {
+      throw new ForbiddenException(
+        'Transaction is not belong to current user!'
+      );
+    }
+
+    return transaction;
   }
 
   async complete(id: number, userId: number) {

@@ -15,6 +15,8 @@ export class RolesGuard implements CanActivate {
     if (role === 'NORMAL')
       return user.role === 'FUNDRASIER' || user.role === 'INVESTOR';
 
+    if (role === 'ALL') return true;
+
     return role === user.role;
   }
 }
