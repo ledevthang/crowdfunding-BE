@@ -165,7 +165,8 @@ export class CampaignService {
       transactions: {
         some: {
           userId,
-          completed: true
+          completed: true,
+          status: 'PROCESSED'
         }
       }
     };

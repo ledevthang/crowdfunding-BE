@@ -9,7 +9,11 @@ import {
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { User } from 'decorators/user.decorator';
-import { CreateTransactionDto, FindTransactionDto } from './transaction.dto';
+import {
+  CreateTransactionDto,
+  FindTransactionDto,
+  UpdateTransactionDto
+} from './transaction.dto';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Auth } from 'decorators/auth.decorator';
 
@@ -35,8 +39,15 @@ export class TransactionController {
   }
 
   @Get()
+  // @Auth('ADMIN')
   async find(@Query() findTransactionDto: FindTransactionDto) {
     return this.transactionService.find(findTransactionDto);
+  }
+
+  @Patch()
+  @Auth('ADMIN')
+  async update(@Body() updateTransactionDto: UpdateTransactionDto) {
+    return this.transactionService.update(updateTransactionDto);
   }
 
   @Get('/self')
