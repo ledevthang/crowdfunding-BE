@@ -6,6 +6,7 @@ import { Queue } from 'bull';
 import { KycQueuePayload, MailJobs, Queues } from 'types/queue.type';
 import { BasePagingResponse } from 'utils/base.dto';
 import { KycCreate, KycQuery, KycUpdate } from './kyc.dto';
+import { exclude } from 'utils/transform.util';
 
 @Injectable()
 export class KycService {
@@ -96,6 +97,19 @@ export class KycService {
       totalElement,
       totalPages: Math.ceil(totalElement / size)
     };
+  }
+
+  async findOne(userId: number) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id: userId
+      },
+      include: {
+        kycInfor: true
+      }
+    });
+
+    return exclude(user, ['password', 'refreshToken']);
   }
 
   async update(body: KycUpdate) {

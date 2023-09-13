@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Auth } from 'decorators/auth.decorator';
 import { User } from 'decorators/user.decorator';
@@ -11,9 +19,14 @@ export class KycController {
   constructor(private readonly kycService: KycService) {}
 
   @Get()
-  // @Auth('ADMIN')
+  @Auth('ADMIN')
   getListKyc(@Query() query: KycQuery) {
     return this.kycService.findAll(query);
+  }
+
+  @Get(':userId')
+  getKyc(@Param('userId') userId: number) {
+    return this.kycService.findOne(userId);
   }
 
   @Patch()
