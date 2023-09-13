@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transaction, TransactionStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsInt } from 'class-validator';
-import { IsFloat, OptionalProperty } from 'decorators/validator.decorator';
+import { IsFloat, IsInterger, OptionalProperty } from 'decorators/validator.decorator';
 import { BasePagingDto, BasePagingResponse } from 'utils/base.dto';
 
 export class CreateTransactionDto {
@@ -21,6 +21,7 @@ export class CreateTransactionDto {
 
 export class UpdateTransactionDto {
   @ApiProperty()
+  @IsInterger
   id: number;
 
   @ApiProperty({ enum: TransactionStatus })

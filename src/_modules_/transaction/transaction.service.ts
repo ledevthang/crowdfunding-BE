@@ -92,14 +92,49 @@ export class TransactionService {
     }
 
     if (action !== 'PROCESSED') {
-      return this.prisma.transaction.update({
+      const updatedTransaction = await this.prisma.transaction.update({
         where: {
           id: id
         },
         data: {
           status: action
+        },
+        select: {
+          generatedNote: true,
+          amount: true,
+          id: true,
+          campaign: {
+            select: {
+              title: true,
+              campaignBank: {
+                select: {
+                  bankName: true,
+                  accountHolderName: true,
+                  bankNumber: true
+                }
+              }
+            }
+          },
+          user: {
+            select: {
+              displayName: true,
+              email: true
+            }
+          }
         }
       });
+
+      await this.emailQueue.add(MailJobs.TxnPending, {
+        accountHoldername:
+          updatedTransaction.campaign.campaignBank.accountHolderName,
+        additionInfor: updatedTransaction.generatedNote,
+        amout: updatedTransaction.amount,
+        displayname: updatedTransaction.user.displayName,
+        email: updatedTransaction.user.email,
+        receivingAccount: updatedTransaction.campaign.campaignBank.bankNumber
+      });
+
+      return updatedTransaction;
     }
 
     const campaign = await this.campaignService.findOne(transaction.campaignId);
@@ -113,6 +148,29 @@ export class TransactionService {
         },
         data: {
           status: action
+        },
+        select: {
+          generatedNote: true,
+          amount: true,
+          id: true,
+          campaign: {
+            select: {
+              title: true,
+              campaignBank: {
+                select: {
+                  bankName: true,
+                  accountHolderName: true,
+                  bankNumber: true
+                }
+              }
+            }
+          },
+          user: {
+            select: {
+              displayName: true,
+              email: true
+            }
+          }
         }
       }),
       this.prisma.campaign.update({
@@ -120,6 +178,17 @@ export class TransactionService {
         data: { currentAmount, progress }
       })
     ]);
+
+    await this.emailQueue.add(MailJobs.TxnPending, {
+      accountHoldername:
+        updatedTransaction.campaign.campaignBank.accountHolderName,
+      additionInfor: updatedTransaction.generatedNote,
+      amout: updatedTransaction.amount,
+      displayname: updatedTransaction.user.displayName,
+      email: updatedTransaction.user.email,
+      receivingAccount: updatedTransaction.campaign.campaignBank.bankNumber
+    });
+
     return updatedTransaction;
   }
 
