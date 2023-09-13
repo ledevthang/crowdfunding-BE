@@ -4,7 +4,11 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import { PrismaService } from '_modules_/prisma/prisma.service';
-import { CreateTransactionDto, FindTransactionDto } from './transaction.dto';
+import {
+  CreateTransactionDto,
+  FindTransactionDto,
+  UpdateTransactionDto
+} from './transaction.dto';
 import { Prisma } from '@prisma/client';
 import { Claims } from 'types/auth.type';
 import { InjectQueue } from '@nestjs/bull';
@@ -73,10 +77,22 @@ export class TransactionService {
     };
   }
 
+  async update({ id, action }: UpdateTransactionDto) {
+    return await this.prisma.transaction.update({
+      where: {
+        id: id
+      },
+      data: {
+        status: action
+      }
+    });
+  }
+
   async find(findTransactionDto: FindTransactionDto, userId = undefined) {
     const {
       page,
       size,
+      sort,
       campaignId,
       minAmount,
       maxAmount,
@@ -86,6 +102,7 @@ export class TransactionService {
       states
     } = findTransactionDto;
     const skip = (page - 1) * size;
+    const [sortField, sortOrder] = sort;
 
     const amountCondition: Prisma.FloatFilter<'Transaction'> = {};
     const campaignCondition: Prisma.CampaignWhereInput = {};
@@ -141,6 +158,9 @@ export class TransactionService {
               title: true
             }
           }
+        },
+        orderBy: {
+          [sortField]: sortOrder
         },
         take: size,
         skip: skip

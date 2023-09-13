@@ -1,10 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transaction, TransactionStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsInt } from 'class-validator';
+import { IsEnum, IsInt } from 'class-validator';
 import { IsFloat, OptionalProperty } from 'decorators/validator.decorator';
 import { BasePagingDto, BasePagingResponse } from 'utils/base.dto';
 
+const KycHandle = {
+  PROCESSED: 'PROCESSED',
+  REFUNDED: 'REFUNDED',
+  PENDING: 'PENDING'
+} as const;
+type KycHandle = (typeof KycHandle)[keyof typeof KycHandle];
 export class CreateTransactionDto {
   @IsInt()
   @ApiProperty({
@@ -19,10 +25,23 @@ export class CreateTransactionDto {
   campaignId: number;
 }
 
+export class UpdateTransactionDto {
+  @ApiProperty()
+  id: number;
+
+  @ApiProperty({ enum: KycHandle })
+  @IsEnum(KycHandle)
+  action: KycHandle;
+}
+
 export class FindTransactionDto extends BasePagingDto {
   @OptionalProperty()
   @Transform(param => Number(param.value) || null)
   campaignId?: number;
+
+  @OptionalProperty()
+  @Transform(param => param.value.split(','))
+  sort?: string[] = ['id', 'asc'];
 
   @IsFloat
   @OptionalProperty()
