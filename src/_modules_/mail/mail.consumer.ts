@@ -1,6 +1,7 @@
 import { Processor, Process } from '@nestjs/bull';
 import { Job } from 'bull';
 import {
+  KycQueuePayload,
   MailJobs,
   Queues,
   TxnPendingPayload,
@@ -20,5 +21,20 @@ export class MailConsumer {
   @Process(MailJobs.TxnPending)
   async onTxnPening({ data }: Job<TxnPendingPayload>) {
     this.emailService.sendMailOnTxnPending(data);
+  }
+
+  @Process(MailJobs.KycPending)
+  async onKycPening({ data }: Job<KycQueuePayload>) {
+    this.emailService.sendMailOnKycPending(data);
+  }
+
+  @Process(MailJobs.KycApproved)
+  async onKycApproved({ data }: Job<KycQueuePayload>) {
+    this.emailService.sendMailOnKycApproved(data);
+  }
+
+  @Process(MailJobs.KycRejected)
+  async onKycRejected({ data }: Job<KycQueuePayload>) {
+    this.emailService.sendMailOnKycRejected(data);
   }
 }

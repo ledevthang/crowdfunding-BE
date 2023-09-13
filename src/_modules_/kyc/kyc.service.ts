@@ -1,12 +1,19 @@
+import { InjectQueue } from '@nestjs/bull';
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '_modules_/prisma/prisma.service';
-import { KycCreate, KycQuery, KycUpdate } from './kyc.dto';
-import { BasePagingResponse } from 'utils/base.dto';
 import { KycInfor, KycStatus, Prisma } from '@prisma/client';
+import { PrismaService } from '_modules_/prisma/prisma.service';
+import { Queue } from 'bull';
+import { KycQueuePayload, MailJobs, Queues } from 'types/queue.type';
+import { BasePagingResponse } from 'utils/base.dto';
+import { KycCreate, KycQuery, KycUpdate } from './kyc.dto';
 
 @Injectable()
 export class KycService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @InjectQueue(Queues.mail)
+    private readonly emailQueue: Queue<KycQueuePayload>
+  ) {}
 
   async findAll(query: KycQuery): Promise<BasePagingResponse<KycInfor>> {
     const {
@@ -96,14 +103,38 @@ export class KycService {
     const newStatus: KycStatus =
       action === 'APPROVED' ? 'APPROVED' : 'REJECTED';
 
-    return await this.prisma.kycInfor.update({
+    const kyc = await this.prisma.kycInfor.update({
       where: {
         id
       },
       data: {
         status: newStatus
+      },
+      select: {
+        user: {
+          select: {
+            displayName: true,
+            email: true
+          }
+        }
       }
     });
+
+    if (action === 'APPROVED')
+      await this.emailQueue.add(MailJobs.KycApproved, {
+        displayname: kyc.user.displayName,
+        email: kyc.user.email
+      });
+
+    if (action === 'REJECTED')
+      await this.emailQueue.add(MailJobs.KycApproved, {
+        displayname: kyc.user.displayName,
+        email: kyc.user.email
+      });
+
+    return {
+      msg: 'ok'
+    };
   }
 
   async create(body: KycCreate, userId: number) {
@@ -120,7 +151,7 @@ export class KycService {
       images
     } = body;
 
-    await this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: {
         id: userId
       },
@@ -149,7 +180,16 @@ export class KycService {
             }
           }
         }
+      },
+      select: {
+        displayName: true,
+        email: true
       }
+    });
+
+    await this.emailQueue.add(MailJobs.KycPending, {
+      displayname: user.displayName,
+      email: user.email
     });
 
     return {
