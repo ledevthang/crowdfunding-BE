@@ -1,4 +1,6 @@
+import { CampaignService } from './../campaign/campaign.service';
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException
@@ -14,13 +16,15 @@ import { Claims } from 'types/auth.type';
 import { InjectQueue } from '@nestjs/bull';
 import { MailJobs, Queues, TxnQueuePayload } from 'types/queue.type';
 import { Queue } from 'bull';
+import { Console } from 'console';
 
 @Injectable()
 export class TransactionService {
   constructor(
     private readonly prisma: PrismaService,
     @InjectQueue(Queues.mail)
-    private readonly emailQueue: Queue<TxnQueuePayload>
+    private readonly emailQueue: Queue<TxnQueuePayload>,
+    private readonly campaignService: CampaignService
   ) {}
 
   async create(userId: number, createTransactionDto: CreateTransactionDto) {
@@ -78,14 +82,49 @@ export class TransactionService {
   }
 
   async update({ id, action }: UpdateTransactionDto) {
-    return await this.prisma.transaction.update({
-      where: {
-        id: id
-      },
-      data: {
-        status: action
-      }
+    const transaction = await this.prisma.transaction.findUnique({
+      where: { id }
     });
+    if (!transaction) {
+      throw new NotFoundException('Not found transaction');
+    }
+
+    if (transaction.status === action) {
+      throw new BadRequestException('Transaction has already been updated');
+    }
+
+    if (action !== 'PROCESSED') {
+      return this.prisma.transaction.update({
+        where: {
+          id: id
+        },
+        data: {
+          status: action
+        }
+      });
+    }
+
+    const campaign = await this.campaignService.findOne(transaction.campaignId);
+    const currentAmount = campaign.currentAmount + transaction.amount;
+    const progress = Number(((currentAmount * 100) / campaign.goal).toFixed(3));
+
+    const [updatedTransaction, updatedCampaign] =
+      await this.prisma.$transaction([
+        this.prisma.transaction.update({
+          where: {
+            id: id
+          },
+          data: {
+            status: action
+          }
+        }),
+        this.prisma.campaign.update({
+          where: { id },
+          data: { currentAmount, progress }
+        })
+      ]);
+    console.log(updatedCampaign);
+    return updatedTransaction;
   }
 
   async find(findTransactionDto: FindTransactionDto, userId = undefined) {

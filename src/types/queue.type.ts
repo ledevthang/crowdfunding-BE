@@ -1,5 +1,6 @@
 export const Queues = {
-  mail: 'mail'
+  mail: 'mail',
+  campaign: 'campaign',
 } as const;
 
 export const MailJobs = {
