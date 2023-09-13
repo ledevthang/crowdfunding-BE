@@ -99,7 +99,7 @@ export class MailService {
                 <title>Crowdfunding Notification</title>
             </head>
             <body>
-                <h2>Dear ${displayname || email}</h2>
+                <h2>Dear ${displayname || email},</h2>
                 <br />
                 <p>Your KYC profile has been received, the results will be sent to you soon.</p>
                 <br />
@@ -126,7 +126,7 @@ export class MailService {
                 <title>Crowdfunding Notification</title>
             </head>
             <body>
-                <h2>Dear ${displayname || email}</h2>
+                <h2>Dear ${displayname || email},</h2>
                 <br />
                 <p>Your KYC profile has been approved, now you can make investments in campaigns.</p>
                 <br />
@@ -153,9 +153,9 @@ export class MailService {
                 <title>Crowdfunding Notification</title>
             </head>
             <body>
-                <h2>Dear ${displayname || email}</h2>
+                <h2>Dear ${displayname || email},</h2>
                 <br />
-                <p>Your KYC profile has been approved, please contact the admin or perform KYC again to continue investing.</p>
+                <p>Your KYC profile has been rejected, please contact the admin or perform KYC again to continue investing.</p>
                 <br />
                 <p>Cheers,</p>
                 <p>The Crowdfunding team</p>
