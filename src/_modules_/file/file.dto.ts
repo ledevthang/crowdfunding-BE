@@ -19,6 +19,16 @@ export class BaseFileUploadDto {
   image: Express.Multer.File;
 }
 
+export class KycImagesUpload {
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    required: true,
+    isArray: true
+  })
+  images: Express.Multer.File[];
+}
+
 export class FindFileDto {
   objectId: number;
   fileType: FileType;

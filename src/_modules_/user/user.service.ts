@@ -102,6 +102,9 @@ export class UserService {
     const me = await this.prisma.user.findUnique({
       where: {
         id
+      },
+      include: {
+        kycInfor: true
       }
     });
     return exclude(me, ['password', 'refreshToken']);

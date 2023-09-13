@@ -36,15 +36,25 @@ model User {
 }
 
 model KycInfor {
-  id          Int       @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   risk        KycRisk
-  status      KycStatus @default(PENDING)
-  submittedAt DateTime? @map("submitted_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  userId      Int       @unique @map("user_id")
-  user        User      @relation(fields: [userId], references: [id])
+  status      KycStatus  @default(PENDING)
+  submittedAt DateTime?  @default(now()) @map("submitted_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  userId      Int        @unique @map("user_id")
+  user        User       @relation(fields: [userId], references: [id])
+  kycImages   KycImage[]
 
   @@map("kyc_infor")
+}
+
+model KycImage {
+  id         Int      @id @default(autoincrement())
+  url        String
+  kycInforId Int
+  kycInfor   KycInfor @relation(fields: [kycInforId], references: [id])
+
+  @@map("kyc_image")
 }
 
 model FileStorage {
