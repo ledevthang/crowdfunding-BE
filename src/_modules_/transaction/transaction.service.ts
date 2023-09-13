@@ -12,7 +12,6 @@ import {
   UpdateTransactionDto
 } from './transaction.dto';
 import { Prisma } from '@prisma/client';
-import { Claims } from 'types/auth.type';
 import { InjectQueue } from '@nestjs/bull';
 import { MailJobs, Queues, TxnQueuePayload } from 'types/queue.type';
 import { Queue } from 'bull';
@@ -107,22 +106,20 @@ export class TransactionService {
     const currentAmount = campaign.currentAmount + transaction.amount;
     const progress = Number(((currentAmount * 100) / campaign.goal).toFixed(3));
 
-    const [updatedTransaction, updatedCampaign] =
-      await this.prisma.$transaction([
-        this.prisma.transaction.update({
-          where: {
-            id: id
-          },
-          data: {
-            status: action
-          }
-        }),
-        this.prisma.campaign.update({
-          where: { id },
-          data: { currentAmount, progress }
-        })
-      ]);
-    console.log(updatedCampaign);
+    const [updatedTransaction] = await this.prisma.$transaction([
+      this.prisma.transaction.update({
+        where: {
+          id: id
+        },
+        data: {
+          status: action
+        }
+      }),
+      this.prisma.campaign.update({
+        where: { id },
+        data: { currentAmount, progress }
+      })
+    ]);
     return updatedTransaction;
   }
 
@@ -219,18 +216,19 @@ export class TransactionService {
     };
   }
 
-  async findOne(id: number, userClaims: Claims) {
-    const transactionCondition: Prisma.TransactionWhereUniqueInput = { id };
-    if (userClaims.role !== 'ADMIN') {
-      transactionCondition.userId = userClaims.id;
-    }
-
+  async findOne(id: number, userId: number) {
     const transaction = await this.prisma.transaction.findUnique({
-      where: transactionCondition
+      where: { id }
     });
 
     if (!transaction) {
       throw new NotFoundException('Not found transaction!');
+    }
+
+    if (transaction.userId !== userId) {
+      throw new ForbiddenException(
+        'Transaction is not belong to current user!'
+      );
     }
 
     return transaction;

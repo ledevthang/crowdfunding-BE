@@ -33,7 +33,9 @@ export class FindTransactionDto extends BasePagingDto {
   @Transform(param => Number(param.value) || null)
   campaignId?: number;
 
-  @OptionalProperty()
+  @OptionalProperty({
+    type: 'string'
+  })
   @Transform(param => param.value.split(','))
   sort?: string[] = ['id', 'asc'];
 

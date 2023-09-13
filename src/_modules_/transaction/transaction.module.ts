@@ -8,11 +8,9 @@ import { CampaignModule } from '_modules_/campaign/campaign.module';
 @Module({
   imports: [
     CampaignModule,
-    BullModule.registerQueue(
-      {
-        name: Queues.mail
-      },
-    )
+    BullModule.registerQueue({
+      name: Queues.mail
+    })
   ],
   controllers: [TransactionController],
   providers: [TransactionService]

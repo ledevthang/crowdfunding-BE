@@ -16,7 +16,6 @@ import {
 } from './transaction.dto';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { Auth } from 'decorators/auth.decorator';
-import { Claims } from 'types/auth.type';
 
 @Controller('transactions')
 @ApiTags('transactions')
@@ -62,7 +61,7 @@ export class TransactionController {
 
   @Get('/:id')
   @Auth()
-  async findOne(@Param('id') id: number, @User() claims: Claims) {
-    return this.transactionService.findOne(id, claims);
+  async findOne(@Param('id') id: number, @User('id') userId: number) {
+    return this.transactionService.findOne(id, userId);
   }
 }
