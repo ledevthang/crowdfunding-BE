@@ -17,10 +17,6 @@ import { User } from 'decorators/user.decorator';
 import { Claims } from 'types/auth.type';
 import { AvatarUpload, BaseFileUploadDto, KycImagesUpload } from './file.dto';
 import { FileService } from './file.service';
-import {
-  MultipleFilesTypeSizeValidator,
-  MultipleMaxFilesSizeValidator
-} from 'decorators/validator.decorator';
 
 @Controller('files')
 @ApiTags('files')

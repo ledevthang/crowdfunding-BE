@@ -61,15 +61,6 @@ export class TransactionService {
       }
     });
 
-    await this.emailQueue.add(MailJobs.TxnPending, {
-      accountHoldername: transaction.campaign.campaignBank.accountHolderName,
-      additionInfor: transaction.generatedNote,
-      amout: transaction.amount,
-      displayname: transaction.user.displayName,
-      email: transaction.user.email,
-      receivingAccount: transaction.campaign.campaignBank.bankNumber
-    });
-
     return {
       ...transaction.campaign.campaignBank,
       campaignTitle: transaction.campaign.title,
@@ -124,7 +115,7 @@ export class TransactionService {
         }
       });
 
-      await this.emailQueue.add(MailJobs.TxnPending, {
+      await this.emailQueue.add(MailJobs.TxnSucceed, {
         accountHoldername:
           updatedTransaction.campaign.campaignBank.accountHolderName,
         additionInfor: updatedTransaction.generatedNote,
@@ -140,7 +131,6 @@ export class TransactionService {
     const campaign = await this.campaignService.findOne(transaction.campaignId);
     const currentAmount = campaign.currentAmount + transaction.amount;
     const progress = Number(((currentAmount * 100) / campaign.goal).toFixed(3));
-
     const [updatedTransaction] = await this.prisma.$transaction([
       this.prisma.transaction.update({
         where: {
@@ -174,12 +164,12 @@ export class TransactionService {
         }
       }),
       this.prisma.campaign.update({
-        where: { id },
+        where: { id: campaign.id },
         data: { currentAmount, progress }
       })
     ]);
 
-    await this.emailQueue.add(MailJobs.TxnPending, {
+    await this.emailQueue.add(MailJobs.TxnSucceed, {
       accountHoldername:
         updatedTransaction.campaign.campaignBank.accountHolderName,
       additionInfor: updatedTransaction.generatedNote,
@@ -320,7 +310,40 @@ export class TransactionService {
       data: {
         completed: true,
         updateDate: new Date()
+      },
+      select: {
+        generatedNote: true,
+        amount: true,
+        id: true,
+        campaign: {
+          select: {
+            title: true,
+            campaignBank: {
+              select: {
+                bankName: true,
+                accountHolderName: true,
+                bankNumber: true
+              }
+            }
+          }
+        },
+        user: {
+          select: {
+            displayName: true,
+            email: true
+          }
+        }
       }
+    });
+
+    await this.emailQueue.add(MailJobs.TxnPending, {
+      accountHoldername:
+        updatedTransaction.campaign.campaignBank.accountHolderName,
+      additionInfor: updatedTransaction.generatedNote,
+      amout: updatedTransaction.amount,
+      displayname: updatedTransaction.user.displayName,
+      email: updatedTransaction.user.email,
+      receivingAccount: updatedTransaction.campaign.campaignBank.bankNumber
     });
     return updatedTransaction;
   }
