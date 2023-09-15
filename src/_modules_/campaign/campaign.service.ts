@@ -245,12 +245,16 @@ export class CampaignService {
           status: true,
           transactions: {
             select: {
-              amount: true
+              amount: true,
+              fundAt: true
             },
             where: {
               userId,
               status: 'PROCESSED',
               completed: true
+            },
+            orderBy: {
+              fundAt: 'desc'
             }
           }
         },
@@ -267,13 +271,15 @@ export class CampaignService {
         (prev, cur) => prev + cur.amount,
         0
       );
+      const paymentDate = transactions[0].fundAt;
       return {
         endAt,
         goal,
         id,
         status,
         title,
-        fundedAmount
+        fundedAmount,
+        paymentDate
       };
     });
 
