@@ -77,6 +77,16 @@ export class CampaignService {
               url: true,
               type: true
             }
+          },
+          transactions: {
+            select: {
+              userId: true
+            },
+            where: {
+              completed: true,
+              status: 'PROCESSED'
+            },
+            distinct: ['userId']
           }
         }
       }),
@@ -93,9 +103,11 @@ export class CampaignService {
         backgroundUrl:
           campaign.campaignFiles.find(
             item => item.type === CampaignFileType.BACKGROUND
-          )?.url || ''
+          )?.url || '',
+        investors: campaign.transactions.length
       };
       delete newCampaign.campaignFiles;
+      delete newCampaign.transactions;
       return newCampaign;
     });
 
@@ -127,6 +139,16 @@ export class CampaignService {
             url: true,
             type: true
           }
+        },
+        transactions: {
+          select: {
+            userId: true
+          },
+          where: {
+            completed: true,
+            status: 'PROCESSED'
+          },
+          distinct: ['userId']
         }
       }
     });
@@ -140,9 +162,11 @@ export class CampaignService {
       backgroundUrl:
         campaign.campaignFiles.find(
           item => item.type === CampaignFileType.BACKGROUND
-        )?.url || ''
+        )?.url || '',
+      investors: campaign.transactions.length
     };
     delete result.campaignFiles;
+    delete result.transactions;
     return result;
   }
 
@@ -221,12 +245,16 @@ export class CampaignService {
           status: true,
           transactions: {
             select: {
-              amount: true
+              amount: true,
+              fundAt: true
             },
             where: {
               userId,
               status: 'PROCESSED',
               completed: true
+            },
+            orderBy: {
+              fundAt: 'desc'
             }
           }
         },
@@ -243,13 +271,15 @@ export class CampaignService {
         (prev, cur) => prev + cur.amount,
         0
       );
+      const paymentDate = transactions[0].fundAt;
       return {
         endAt,
         goal,
         id,
         status,
         title,
-        fundedAmount
+        fundedAmount,
+        paymentDate
       };
     });
 
