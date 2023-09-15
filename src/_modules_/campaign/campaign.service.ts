@@ -85,7 +85,8 @@ export class CampaignService {
             where: {
               completed: true,
               status: 'PROCESSED'
-            }
+            },
+            distinct: ['userId']
           }
         }
       }),
@@ -103,7 +104,7 @@ export class CampaignService {
           campaign.campaignFiles.find(
             item => item.type === CampaignFileType.BACKGROUND
           )?.url || '',
-        investors: new Set(campaign.transactions.map(i => i.userId)).size
+        investors: campaign.transactions.length
       };
       delete newCampaign.campaignFiles;
       delete newCampaign.transactions;
@@ -146,7 +147,8 @@ export class CampaignService {
           where: {
             completed: true,
             status: 'PROCESSED'
-          }
+          },
+          distinct: ['userId']
         }
       }
     });
@@ -161,7 +163,7 @@ export class CampaignService {
         campaign.campaignFiles.find(
           item => item.type === CampaignFileType.BACKGROUND
         )?.url || '',
-      investors: new Set(campaign.transactions.map(i => i.userId)).size
+      investors: campaign.transactions.length
     };
     delete result.campaignFiles;
     delete result.transactions;
