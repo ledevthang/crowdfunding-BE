@@ -35,14 +35,11 @@ export class CampaignService {
       };
     }
 
-    const dateCondition: Prisma.DateTimeFilter<'Campaign'> = {};
-
-    if (startDate) {
-      dateCondition.gte = startDate;
-    }
-
-    if (endDate) {
-      dateCondition.lte = endDate;
+    if (startDate && endDate) {
+      campaignCondition.endAt = {
+        gte: startDate,
+        lte: endDate
+      };
     }
 
     if (states) {
@@ -52,7 +49,6 @@ export class CampaignService {
     }
 
     campaignCondition.title = titleCondition;
-    campaignCondition.endAt = dateCondition;
     const [campaigns, count] = await Promise.all([
       this.prisma.campaign.findMany({
         take: size,
@@ -344,7 +340,6 @@ export class CampaignService {
       await this.prisma.campaign.delete({ where: { id } });
       return { message: 'success' };
     } catch (error) {
-      console.log(error);
       return {
         message:
           error.code === 'P2025' ? 'Record to delete does not exist.' : 'fail!'
