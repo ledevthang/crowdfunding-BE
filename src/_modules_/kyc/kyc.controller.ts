@@ -25,6 +25,7 @@ export class KycController {
   }
 
   @Get(':userId')
+  @Auth('ADMIN')
   getKyc(@Param('userId') userId: number) {
     return this.kycService.findOne(userId);
   }

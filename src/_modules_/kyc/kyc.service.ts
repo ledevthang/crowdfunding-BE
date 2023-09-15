@@ -47,9 +47,9 @@ export class KycService {
     }
 
     if (startDate && endDate) {
-      kycCondition.updatedAt = {
-        lte: endDate,
-        gte: startDate
+      kycCondition.submittedAt = {
+        gte: startDate,
+        lte: endDate
       };
     }
 
