@@ -77,6 +77,15 @@ export class CampaignService {
               url: true,
               type: true
             }
+          },
+          transactions: {
+            select: {
+              userId: true
+            },
+            where: {
+              completed: true,
+              status: 'PROCESSED'
+            }
           }
         }
       }),
@@ -93,9 +102,11 @@ export class CampaignService {
         backgroundUrl:
           campaign.campaignFiles.find(
             item => item.type === CampaignFileType.BACKGROUND
-          )?.url || ''
+          )?.url || '',
+        investors: new Set(campaign.transactions.map(i => i.userId)).size
       };
       delete newCampaign.campaignFiles;
+      delete newCampaign.transactions;
       return newCampaign;
     });
 
@@ -127,6 +138,15 @@ export class CampaignService {
             url: true,
             type: true
           }
+        },
+        transactions: {
+          select: {
+            userId: true
+          },
+          where: {
+            completed: true,
+            status: 'PROCESSED'
+          }
         }
       }
     });
@@ -140,9 +160,11 @@ export class CampaignService {
       backgroundUrl:
         campaign.campaignFiles.find(
           item => item.type === CampaignFileType.BACKGROUND
-        )?.url || ''
+        )?.url || '',
+      investors: new Set(campaign.transactions.map(i => i.userId)).size
     };
     delete result.campaignFiles;
+    delete result.transactions;
     return result;
   }
 

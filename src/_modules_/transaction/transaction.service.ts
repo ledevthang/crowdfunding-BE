@@ -131,6 +131,14 @@ export class TransactionService {
     const campaign = await this.campaignService.findOne(transaction.campaignId);
     const currentAmount = campaign.currentAmount + transaction.amount;
     const progress = Number(((currentAmount * 100) / campaign.goal).toFixed(3));
+    const campaignUpdateData: Prisma.CampaignUpdateInput = {
+      currentAmount,
+      progress
+    };
+    if (currentAmount >= campaign.goal) {
+      campaignUpdateData.status = 'SUCCEED';
+    }
+
     const [updatedTransaction] = await this.prisma.$transaction([
       this.prisma.transaction.update({
         where: {
@@ -165,7 +173,7 @@ export class TransactionService {
       }),
       this.prisma.campaign.update({
         where: { id: campaign.id },
-        data: { currentAmount, progress }
+        data: campaignUpdateData
       })
     ]);
 
