@@ -17,7 +17,8 @@ export class MailService {
       email,
       receivingAccount,
       displayname,
-      accountHoldername
+      accountHoldername,
+      campaignTitle
     } = payload;
 
     await this.mailerService.sendMail({
@@ -34,7 +35,7 @@ export class MailService {
           <body>
               <h2>Dear ${displayname || email}</h2>
               <br>
-              The following is the transfer information for the funding transaction to .</br> Transfer information:
+              The following is the transfer information for the funding transaction to campaign ${campaignTitle}.</br> Transfer information:
               Amount: <strong>${amout}$</strong> Receiving account: <strong>${receivingAccount}</strong>
               Account holder name: <strong>${accountHoldername}</strong>
               <br />
@@ -54,7 +55,8 @@ export class MailService {
       email,
       receivingAccount,
       displayname,
-      accountHoldername
+      accountHoldername,
+      campaignTitle
     } = payload;
 
     await this.mailerService.sendMail({
@@ -70,7 +72,7 @@ export class MailService {
             </head>
             <body>
                 <h2>Dear ${displayname || email}</h2>
-                <br> We have successfully recorded your transaction.Transfer information:</br> Transfer information:
+                <br> We have successfully recorded your transaction to campaign ${campaignTitle}.Transfer information:</br> Transfer information:
                 Amount: <strong>${amout}$</strong> Receiving account: <strong>${receivingAccount}</strong>
                 Account holder name: <strong>${accountHoldername}</strong>
                 <br />

@@ -17,6 +17,7 @@ export type TxnSucceedPayload = {
   additionInfor: string;
   displayname: string;
   accountHoldername: string;
+  campaignTitle: string;
 };
 
 export type TxnPendingPayload = TxnSucceedPayload;
