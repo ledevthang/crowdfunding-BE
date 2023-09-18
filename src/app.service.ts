@@ -142,7 +142,7 @@ export class AppService {
       where: {
         status: 'ON_GOING',
         endAt: {
-          lte: (new Date()).toISOString()
+          lte: new Date()
         },
         progress: {
           lt: 100
