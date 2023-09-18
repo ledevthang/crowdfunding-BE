@@ -19,7 +19,8 @@ export class CreateCampaignDto {
   })
   @IsNotEmpty()
   title: string;
-
+  
+  @ApiProperty()
   description: string;
 
   @ApiProperty({
