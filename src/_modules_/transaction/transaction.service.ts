@@ -122,7 +122,8 @@ export class TransactionService {
         amout: updatedTransaction.amount,
         displayname: updatedTransaction.user.displayName,
         email: updatedTransaction.user.email,
-        receivingAccount: updatedTransaction.campaign.campaignBank.bankNumber
+        receivingAccount: updatedTransaction.campaign.campaignBank.bankNumber,
+        campaignTitle: updatedTransaction.campaign.title
       });
 
       return updatedTransaction;
@@ -184,7 +185,8 @@ export class TransactionService {
       amout: updatedTransaction.amount,
       displayname: updatedTransaction.user.displayName,
       email: updatedTransaction.user.email,
-      receivingAccount: updatedTransaction.campaign.campaignBank.bankNumber
+      receivingAccount: updatedTransaction.campaign.campaignBank.bankNumber,
+      campaignTitle: updatedTransaction.campaign.title
     });
 
     return updatedTransaction;
@@ -351,7 +353,8 @@ export class TransactionService {
       amout: updatedTransaction.amount,
       displayname: updatedTransaction.user.displayName,
       email: updatedTransaction.user.email,
-      receivingAccount: updatedTransaction.campaign.campaignBank.bankNumber
+      receivingAccount: updatedTransaction.campaign.campaignBank.bankNumber,
+      campaignTitle: updatedTransaction.campaign.title
     });
     return updatedTransaction;
   }
