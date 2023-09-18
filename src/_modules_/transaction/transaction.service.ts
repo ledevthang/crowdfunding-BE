@@ -136,9 +136,6 @@ export class TransactionService {
       currentAmount,
       progress
     };
-    if (currentAmount >= campaign.goal) {
-      campaignUpdateData.status = 'SUCCEED';
-    }
 
     const [updatedTransaction] = await this.prisma.$transaction([
       this.prisma.transaction.update({
