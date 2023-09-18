@@ -138,19 +138,36 @@ export class AppService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async updateCampaignStatus() {
-    await this.prisma.campaign.updateMany({
-      where: {
-        status: 'ON_GOING',
-        endAt: {
-          lte: new Date()
+    await Promise.all([
+      await this.prisma.campaign.updateMany({
+        where: {
+          status: 'ON_GOING',
+          endAt: {
+            lte: new Date()
+          },
+          progress: {
+            lt: 100
+          }
         },
-        progress: {
-          lt: 100
+        data: {
+          status: 'FAILED'
         }
-      },
-      data: {
-        status: 'FAILED'
-      }
-    });
+      }),
+      await this.prisma.campaign.updateMany({
+        where: {
+          status: 'ON_GOING',
+          endAt: {
+            lte: new Date()
+          },
+          progress: {
+            gte: 100
+          }
+        },
+        data: {
+          status: 'SUCCEED'
+        }
+      }),
+    ])
+    
   }
 }
