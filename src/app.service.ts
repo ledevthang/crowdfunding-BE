@@ -135,4 +135,22 @@ export class AppService {
       i++;
     }
   }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async updateCampaignStatus() {
+    await this.prisma.campaign.updateMany({
+      where: {
+        status: 'ON_GOING',
+        endAt: {
+          lte: (new Date()).toISOString()
+        },
+        progress: {
+          lt: 100
+        }
+      },
+      data: {
+        status: 'FAILED'
+      }
+    });
+  }
 }
