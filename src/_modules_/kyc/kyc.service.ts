@@ -105,7 +105,20 @@ export class KycService {
         id: userId
       },
       include: {
-        kycInfor: true
+        kycInfor: {
+          select: {
+            id: true,
+            risk: true,
+            status: true,
+            submittedAt: true,
+            updatedAt: true,
+            kycImages: {
+              select: {
+                url: true
+              }
+            }
+          }
+        }
       }
     });
 
