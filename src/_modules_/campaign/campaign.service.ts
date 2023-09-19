@@ -22,6 +22,7 @@ export class CampaignService {
     const [sortField, sortOrder] = sort;
     const campaignCondition: Prisma.CampaignWhereInput = { categories: {} };
     const titleCondition: Prisma.StringFilter = {};
+    let campaignOrderBy: Prisma.CampaignOrderByWithRelationInput = {};
 
     if (query) {
       titleCondition.contains = query;
@@ -48,15 +49,25 @@ export class CampaignService {
       };
     }
 
+    if (sortField && sortOrder) {
+      if (sortField === 'investor') {
+        campaignOrderBy.transactions = {
+          _count: 'desc'
+        };
+      } else {
+        campaignOrderBy = {
+          [sortField]: sortOrder
+        };
+      }
+    }
+
     campaignCondition.title = titleCondition;
     const [campaigns, count] = await Promise.all([
       this.prisma.campaign.findMany({
         take: size,
         skip: skip,
         where: campaignCondition,
-        orderBy: {
-          [sortField]: sortOrder
-        },
+        orderBy: campaignOrderBy,
         include: {
           categories: {
             select: {
