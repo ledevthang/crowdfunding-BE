@@ -11,13 +11,13 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  @Auth('INVESTOR')
+  @Auth('NORMAL')
   whoAmI(@User('id') userId: number) {
     return this.userService.findById(userId);
   }
 
   @Patch()
-  @Auth('INVESTOR')
+  @Auth('NORMAL')
   updateAccount(@Body() body: AccountUpdate, @User('id') userId: number) {
     return this.userService.update(body, userId);
   }

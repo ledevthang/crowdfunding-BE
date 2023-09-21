@@ -20,7 +20,17 @@ export class AuthService {
   ) {}
 
   async signUp(signUpDto: SignUpDto) {
-    const { email, firstName, lastName, password, role } = signUpDto;
+    const {
+      email,
+      firstName,
+      lastName,
+      password,
+      role,
+      organizationName,
+      organizationType,
+      country,
+      organizationWebsite
+    } = signUpDto;
     const user = await this.userService.findByEmail(email);
 
     if (user)
@@ -34,7 +44,11 @@ export class AuthService {
       firstName,
       lastName,
       displayName: `${firstName} ${lastName}`,
-      role
+      role,
+      organizationName,
+      organizationType,
+      country,
+      organizationWebsite
     };
 
     await this.userService.create(sendUser);

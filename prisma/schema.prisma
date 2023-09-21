@@ -11,28 +11,39 @@ datasource db {
 }
 
 model User {
-  id            Int           @id @default(autoincrement())
-  email         String        @unique
-  firstName     String        @map("first_name")
-  lastName      String        @map("last_name")
-  displayName   String        @map("display_name")
-  password      String
-  dateOfBirth   DateTime?     @map("date_of_birth")
-  phoneNumber   String?
-  streetAddress String?       @map("street_address")
-  country       String?
-  city          String?
-  stateProvince String?       @map("state_province")
-  zip           String?
-  role          UserRole
-  refreshToken  String?       @map("refresh_token")
-  avatarPicture String?       @map("avatar_picture")
-  activated     Boolean       @default(false)
-  kycInfor      KycInfor?
-  campaign      Campaign[]
-  Transaction   Transaction[]
+  id                Int                @id @default(autoincrement())
+  email             String             @unique
+  firstName         String             @map("first_name")
+  lastName          String             @map("last_name")
+  displayName       String             @map("display_name")
+  password          String
+  dateOfBirth       DateTime?          @map("date_of_birth")
+  phoneNumber       String?
+  streetAddress     String?            @map("street_address")
+  country           String?
+  city              String?
+  stateProvince     String?            @map("state_province")
+  zip               String?
+  role              UserRole
+  refreshToken      String?            @map("refresh_token")
+  avatarPicture     String?            @map("avatar_picture")
+  activated         Boolean            @default(false)
+  kycInfor          KycInfor?
+  OrganizationInfor OrganizationInfor?
+  campaign          Campaign[]
+  Transaction       Transaction[]
 
   @@map("user")
+}
+
+model OrganizationInfor {
+  id      Int    @id @default(autoincrement())
+  name    String
+  type    String
+  website String
+  country String
+  userId  Int    @unique @map("user_id")
+  user    User   @relation(fields: [userId], references: [id])
 }
 
 model KycInfor {

@@ -14,6 +14,14 @@ export class CreateUserDto {
   password: string;
 
   role: UserRole;
+
+  organizationName?: string;
+
+  organizationType?: string;
+
+  country?: string;
+
+  organizationWebsite?: string;
 }
 
 export class AccountUpdate {
