@@ -5,12 +5,12 @@ import {
   UseGuards
 } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from 'guards/jwt-auth.guard';
 import { RolesGuard } from 'guards/role.guard';
+import { AuthRole } from 'types/auth.type';
 
 export function Auth(
-  role: UserRole,
+  role: AuthRole = 'ALL',
   /* eslint-disable-next-line */
   ...AnyGuardElse: Array<Function | CanActivate>
 ) {
