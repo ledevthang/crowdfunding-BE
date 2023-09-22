@@ -50,6 +50,18 @@ export class AccountUpdate {
 
   @OptionalProperty()
   currentPassword?: string;
+
+  @OptionalProperty()
+  organizationName?: string;
+
+  @OptionalProperty()
+  organizationType?: string;
+
+  @OptionalProperty()
+  organizationWebsite?: string;
+
+  @OptionalProperty()
+  organizationCoutry?: string;
 }
 
 export type UserResult = Omit<

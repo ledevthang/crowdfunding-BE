@@ -28,7 +28,7 @@ export class CampaignController {
   }
 
   @Get('/self')
-  @Auth('INVESTOR')
+  @Auth('NORMAL')
   async findSelf(
     @User('id') userId: number,
     @Query() findCampaignDto: FindFundedCampaignDto
