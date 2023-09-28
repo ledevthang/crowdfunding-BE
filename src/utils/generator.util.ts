@@ -1,8 +1,8 @@
-type S3Subject = 'avatars' | 'kyc';
+type S3Subject = 'avatars' | 'kyc' | 'campaign';
 
 export function generateS3ObjectKey(
   subject: S3Subject,
-  subjectId: number,
+  subjectId: number | string,
   includetime = false
 ) {
   if (includetime) return `${subject}/${subjectId}/${Date.now()}`;

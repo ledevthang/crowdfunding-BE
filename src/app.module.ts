@@ -15,6 +15,7 @@ import { KycModule } from './_modules_/kyc/kyc.module';
 import { TransactionModule } from './_modules_/transaction/transaction.module';
 import { BullModule } from '@nestjs/bull';
 import { MailModule } from '_modules_/mail/mail.module';
+import { BankModule } from './_modules_/bank/bank.module';
 
 @Module({
   imports: [
@@ -52,7 +53,8 @@ import { MailModule } from '_modules_/mail/mail.module';
     FileModule,
     TransactionModule,
     KycModule,
-    MailModule
+    MailModule,
+    BankModule
   ],
   controllers: [AppController],
   providers: [AppService]

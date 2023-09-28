@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Prisma, User, UserRole } from '@prisma/client';
 import { PrismaService } from '_modules_/prisma/prisma.service';
 import { AccountUpdate, CreateUserDto, UserResult } from './user.dto';
 import { InjectS3, S3 } from 'nestjs-s3';
@@ -14,8 +14,18 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const { displayName, email, firstName, lastName, password, role } =
-      createUserDto;
+    const {
+      displayName,
+      email,
+      firstName,
+      lastName,
+      password,
+      role,
+      organizationName,
+      organizationType,
+      country,
+      organizationWebsite
+    } = createUserDto;
 
     return await this.prisma.user.create({
       data: {
@@ -24,12 +34,20 @@ export class UserService {
         firstName,
         lastName,
         password,
-        role
+        role,
+        organizationInfor: {
+          create: {
+            name: organizationName,
+            type: organizationType,
+            country: country,
+            website: organizationWebsite
+          }
+        }
       }
     });
   }
 
-  async update(body: AccountUpdate, id: number) {
+  async update(body: AccountUpdate, id: number, role: UserRole) {
     const {
       address,
       avatarPicture,
@@ -41,7 +59,11 @@ export class UserService {
       newPassword,
       postCode,
       telephoneNumber,
-      town
+      town,
+      organizationName,
+      organizationType,
+      organizationWebsite,
+      organizationCoutry
     } = body;
 
     let newHash: string;
@@ -67,6 +89,30 @@ export class UserService {
       newHash = await bcrypt.hash(newPassword, 8);
     }
 
+    const user: Prisma.UserUpdateInput = {
+      organizationInfor: {}
+    };
+
+    if (role === 'FUNDRASIER') {
+      user.organizationInfor.upsert = {
+        where: {
+          userId: id
+        },
+        update: {
+          name: organizationName,
+          type: organizationType,
+          website: organizationWebsite,
+          country: organizationCoutry
+        },
+        create: {
+          name: organizationName,
+          type: organizationType,
+          website: organizationWebsite,
+          country: organizationCoutry
+        }
+      };
+    }
+
     return await this.prisma.user.update({
       where: {
         id
@@ -82,7 +128,8 @@ export class UserService {
         zip: postCode,
         phoneNumber: telephoneNumber,
         displayName: firstName + ' ' + lastName,
-        city: town
+        city: town,
+        organizationInfor: user.organizationInfor
       },
       select: {
         email: true,
@@ -104,7 +151,8 @@ export class UserService {
         id
       },
       include: {
-        kycInfor: true
+        kycInfor: true,
+        organizationInfor: true
       }
     });
     return exclude(me, ['password', 'refreshToken']);
