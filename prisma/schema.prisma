@@ -94,22 +94,23 @@ model Campaign {
   creatorId     Int                @map("creator_id")
   user          User               @relation(fields: [creatorId], references: [id])
   campaignTags  String[]           @default([])
-  status        FundCampaignStatus @default(ON_GOING)
+  status        FundCampaignStatus @default(PENDING)
   categories    CategoryCampaign[]
   campaignFiles CampaignFile[]
   transactions  Transaction[]
-  campaignBank  CampaignBank?
+
+  campaignBank   CampaignBank @relation(fields: [campaignBankId], references: [id])
+  campaignBankId Int          @map("campaign_bank_id")
 
   @@map("campaign")
 }
 
 model CampaignBank {
-  id                Int      @id @default(autoincrement())
-  bankName          String   @map("bank_name")
-  accountHolderName String   @map("account_holder_name")
-  bankNumber        String   @map("bank_number")
-  campaignId        Int      @unique @map("campaign_id")
-  campaign          Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  id                Int        @id @default(autoincrement())
+  bankName          String     @map("bank_name")
+  accountHolderName String     @map("account_holder_name")
+  bankNumber        String     @map("bank_number")
+  campaign          Campaign[]
 
   @@map("campaign_bank")
 }
@@ -201,6 +202,8 @@ enum TransactionPaymentMethod {
 }
 
 enum FundCampaignStatus {
+  PENDING
+  REJECTED
   ON_GOING
   FAILED
   SUCCEED

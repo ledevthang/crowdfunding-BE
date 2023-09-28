@@ -11,7 +11,7 @@ export class CategoryService {
   }
 
   async create(name: string) {
-    this.prisma.category.create({ data: { name } });
+    await this.prisma.category.create({ data: { name } });
     return { message: 'success' };
   }
 }

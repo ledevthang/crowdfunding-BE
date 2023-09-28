@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { OptionalProperty } from 'decorators/validator.decorator';
-import { BasePagingDto } from 'utils/base.dto';
+import { BasePagingDto, SortOrder } from 'utils/base.dto';
 
 const KycHandle = {
   APPROVE: 'APPROVED',
@@ -21,14 +21,9 @@ const SortField = {
   NAME: 'displayName'
 } as const;
 
-const SortOrder = {
-  ASC: 'asc',
-  DESC: 'desc'
-} as const;
-
 type KycHandle = (typeof KycHandle)[keyof typeof KycHandle];
 type KycStatus = (typeof KycStatus)[keyof typeof KycStatus];
-type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
+
 type SortField = (typeof SortField)[keyof typeof SortField];
 
 export class KycQuery extends BasePagingDto {
