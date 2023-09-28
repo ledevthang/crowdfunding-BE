@@ -48,6 +48,8 @@ export class CampaignService {
       };
     }
 
+    if (userRole === 'ADMIN') campaignCondition = {};
+
     if (query) {
       titleCondition.contains = query;
       titleCondition.mode = 'insensitive';
