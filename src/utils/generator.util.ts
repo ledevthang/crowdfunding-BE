@@ -5,7 +5,7 @@ export function generateS3ObjectKey(
   subjectId: number | string,
   includetime = false
 ) {
-  if (includetime) return `${subject}/${subjectId}/${Date.now()}`;
+  if (includetime) return `${subject}/${subjectId}/${new Date().getTime()}`;
 
   return `${subject}/${subjectId}`;
 }

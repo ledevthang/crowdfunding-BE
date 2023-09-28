@@ -14,7 +14,7 @@ export class FileService {
 
   async handleAvatar(avatar: Express.Multer.File, user: Claims) {
     const { id } = user;
-    const key = generateS3ObjectKey('avatars', id);
+    const key = generateS3ObjectKey('avatars', id, true);
     const url = await this.uploadToS3(avatar.buffer, key);
 
     return { url };
