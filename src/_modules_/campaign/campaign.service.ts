@@ -465,7 +465,7 @@ export class CampaignService {
   }
 
   async findBackers(cId: number, creatorId: number, query: BackersDto) {
-    const { page, size } = query;
+    const { page, size, sortField, sortOrder } = query;
 
     const backerConditions: Prisma.TransactionWhereInput = {
       campaignId: cId,
@@ -474,6 +474,30 @@ export class CampaignService {
         creatorId: creatorId
       }
     };
+
+    let backersOrderby: Prisma.TransactionOrderByWithRelationInput = {
+      user: {}
+    };
+
+    if (sortField === 'name' && sortOrder)
+      backersOrderby.user = {
+        displayName: sortOrder
+      };
+
+    if (sortField === 'email' && sortOrder)
+      backersOrderby.user = {
+        email: sortOrder
+      };
+
+    if (
+      (sortField === 'amount' ||
+        sortField === 'fundAt' ||
+        sortField === 'generatedNote') &&
+      sortOrder
+    )
+      backersOrderby = {
+        [sortField]: sortOrder
+      };
 
     const [backers, totalElement, aggregate, totalInvestor] = await Promise.all(
       [
@@ -491,7 +515,8 @@ export class CampaignService {
                 displayName: true
               }
             }
-          }
+          },
+          orderBy: backersOrderby
         }),
         this.prisma.transaction.count({
           where: backerConditions

@@ -11,7 +11,7 @@ export type ShortCampaign = Pick<
   'id' | 'title' | 'goal' | 'endAt' | 'status'
 >;
 
-const sortField = {
+const sortFieldCampaign = {
   title: 'title',
   startAt: 'startAt',
   endAt: 'endAt',
@@ -21,7 +21,8 @@ const sortField = {
   progress: 'progress'
 } as const;
 
-type sortField = (typeof sortField)[keyof typeof sortField];
+type sortFieldCampaign =
+  (typeof sortFieldCampaign)[keyof typeof sortFieldCampaign];
 
 const campaignStatus = {
   submitting: 'submitting',
@@ -29,6 +30,17 @@ const campaignStatus = {
 } as const;
 
 type campaignStatus = (typeof campaignStatus)[keyof typeof campaignStatus];
+
+const sortFieldBankers = {
+  name: 'name',
+  email: 'email',
+  fundAt: 'fundAt',
+  amount: 'amount',
+  generatedNote: 'generatedNote'
+} as const;
+
+type sortFieldBankers =
+  (typeof sortFieldBankers)[keyof typeof sortFieldBankers];
 
 // END TYPE //
 
@@ -191,8 +203,8 @@ export class MyCampaignDto extends BasePagingDto {
     type: 'string',
     required: false
   })
-  @IsEnum(sortField)
-  sortField: sortField;
+  @IsEnum(sortFieldCampaign)
+  sortField: sortFieldCampaign;
 
   @OptionalProperty({
     type: 'string',
@@ -211,10 +223,10 @@ export class MyCampaignDto extends BasePagingDto {
 
 export class BackersDto extends BasePagingDto {
   @OptionalProperty({
-    enum: sortField
+    enum: sortFieldBankers
   })
-  @IsEnum(sortField)
-  sortField: sortField;
+  @IsEnum(sortFieldBankers)
+  sortField: sortFieldBankers;
 
   @OptionalProperty({
     enum: SortOrder
