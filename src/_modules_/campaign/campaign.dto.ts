@@ -209,6 +209,20 @@ export class MyCampaignDto extends BasePagingDto {
   campaignStatus?: campaignStatus;
 }
 
+export class BackersDto extends BasePagingDto {
+  @OptionalProperty({
+    enum: sortField
+  })
+  @IsEnum(sortField)
+  sortField: sortField;
+
+  @OptionalProperty({
+    enum: SortOrder
+  })
+  @IsEnum(SortOrder)
+  sortOrder: SortOrder;
+}
+
 export class DetailCampaignDto {
   @OptionalProperty()
   userId?: number;

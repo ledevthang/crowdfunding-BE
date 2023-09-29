@@ -13,6 +13,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { User } from 'decorators/user.decorator';
 import { Auth } from 'decorators/auth.decorator';
 import {
+  BackersDto,
   CreateCampaignDto,
   DetailCampaignDto,
   FindCampaignDto,
@@ -50,6 +51,16 @@ export class CampaignController {
     @Query() query: MyCampaignDto
   ) {
     return await this.campaignService.findMyCampaign(userId, query);
+  }
+
+  @Get('/my-campaign/backers/:cId')
+  @Auth('ADMINORFUNDRAISER')
+  async findBackers(
+    @User('id') creatorId: number,
+    @Param('cId') cId: number,
+    @Query() query: BackersDto
+  ) {
+    return this.campaignService.findBackers(+cId, creatorId, query);
   }
 
   @Post()

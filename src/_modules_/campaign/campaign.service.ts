@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Campaign, CampaignFileType, Prisma } from '@prisma/client';
 import { PrismaService } from '_modules_/prisma/prisma.service';
 import {
+  BackersDto,
   CreateCampaignDto,
   FindCampaignDto,
   FindCampaignsResultDto,
@@ -460,6 +461,74 @@ export class CampaignService {
       totalElement: count,
       totalGoal: totalRaised._sum.currentAmount,
       totalSuceed: totalSuceed._sum.currentAmount
+    };
+  }
+
+  async findBackers(cId: number, creatorId: number, query: BackersDto) {
+    const { page, size } = query;
+
+    const backerConditions: Prisma.TransactionWhereInput = {
+      campaignId: cId,
+      status: 'PROCESSED',
+      campaign: {
+        creatorId: creatorId
+      }
+    };
+
+    const [backers, totalElement, aggregate, totalInvestor] = await Promise.all(
+      [
+        this.prisma.transaction.findMany({
+          where: backerConditions,
+          take: size,
+          skip: (page - 1) * size,
+          select: {
+            amount: true,
+            fundAt: true,
+            generatedNote: true,
+            user: {
+              select: {
+                email: true,
+                displayName: true
+              }
+            }
+          }
+        }),
+        this.prisma.transaction.count({
+          where: backerConditions
+        }),
+        this.prisma.transaction.aggregate({
+          where: backerConditions,
+          _sum: {
+            amount: true
+          },
+          _avg: {
+            amount: true
+          }
+        }),
+        this.prisma.transaction.findMany({
+          where: backerConditions,
+          distinct: ['userId']
+        })
+      ]
+    );
+
+    const result = backers.map(({ amount, fundAt, generatedNote, user }) => ({
+      fundName: user.displayName,
+      fundEmail: user.email,
+      fundAt,
+      generatedNote,
+      amount
+    }));
+
+    return {
+      data: result,
+      page: page,
+      size: size,
+      totalPages: Math.ceil(totalElement / size) || 0,
+      totalElement: totalElement,
+      totalAmount: aggregate._sum.amount,
+      averageAmount: aggregate._avg.amount,
+      totalInvestor: totalInvestor.length
     };
   }
 
