@@ -506,9 +506,15 @@ export class CampaignService {
           take: size,
           skip: (page - 1) * size,
           select: {
+            id: true,
             amount: true,
             fundAt: true,
             generatedNote: true,
+            campaign: {
+              select: {
+                title: true
+              }
+            },
             user: {
               select: {
                 email: true,
@@ -537,13 +543,17 @@ export class CampaignService {
       ]
     );
 
-    const result = backers.map(({ amount, fundAt, generatedNote, user }) => ({
-      fundName: user.displayName,
-      fundEmail: user.email,
-      fundAt,
-      generatedNote,
-      amount
-    }));
+    const result = backers.map(
+      ({ amount, fundAt, generatedNote, user, campaign, id }) => ({
+        id,
+        fundName: user.displayName,
+        fundEmail: user.email,
+        fundAt,
+        generatedNote,
+        amount,
+        campaignName: campaign.title
+      })
+    );
 
     return {
       data: result,
