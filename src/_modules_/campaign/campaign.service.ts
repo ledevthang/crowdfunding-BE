@@ -434,13 +434,10 @@ export class CampaignService {
           currentAmount: true
         }
       }),
-      this.prisma.campaign.aggregate({
+      this.prisma.campaign.findMany({
         where: {
           creatorId: userId,
           status: 'SUCCEED'
-        },
-        _sum: {
-          currentAmount: true
         }
       })
     ]);
@@ -460,7 +457,7 @@ export class CampaignService {
       totalPages: Math.ceil(count / size) || 0,
       totalElement: count,
       totalGoal: totalRaised._sum.currentAmount,
-      totalSuceed: totalSuceed._sum.currentAmount
+      totalSuceed: totalSuceed.length
     };
   }
 
