@@ -22,7 +22,8 @@ export class AppService {
     return 'Hello kitty';
   }
 
-  async kycMock(): Promise<Mock> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async kycMock(_userId: number): Promise<Mock> {
     const rand = Math.floor(Math.random() * 3);
     return {
       risk: Object.values(KycRisk)[rand]
