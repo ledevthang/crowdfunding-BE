@@ -1,6 +1,7 @@
 import { Processor, Process } from '@nestjs/bull';
 import { Job } from 'bull';
 import {
+  CampaignQueuePayload,
   KycQueuePayload,
   MailJobs,
   Queues,
@@ -36,5 +37,20 @@ export class MailConsumer {
   @Process(MailJobs.KycRejected)
   async onKycRejected({ data }: Job<KycQueuePayload>) {
     this.emailService.sendMailOnKycRejected(data);
+  }
+
+  @Process(MailJobs.CampaignPending)
+  async onCpnPending({ data }: Job<CampaignQueuePayload>) {
+    this.emailService.sendMailOnCpnPending(data);
+  }
+
+  @Process(MailJobs.CampaignApproved)
+  async onCpnApproved({ data }: Job<CampaignQueuePayload>) {
+    this.emailService.sendMailOnCpnApproved(data);
+  }
+
+  @Process(MailJobs.CampaignRejected)
+  async onCpnRejected({ data }: Job<CampaignQueuePayload>) {
+    this.emailService.sendMailOnCpnRejected(data);
   }
 }

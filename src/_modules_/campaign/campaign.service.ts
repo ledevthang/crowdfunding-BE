@@ -11,10 +11,17 @@ import {
   MyCampaignDto,
   UpdateCampaignDto
 } from './campaign.dto';
+import { InjectQueue } from '@nestjs/bull';
+import { CampaignQueuePayload, MailJobs, Queues } from 'types/queue.type';
+import { Queue } from 'bull';
 
 @Injectable()
 export class CampaignService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectQueue(Queues.mail)
+    private readonly emailQueue: Queue<CampaignQueuePayload>,
+    private readonly prisma: PrismaService
+  ) {}
 
   async find(
     findCampaignDto: FindCampaignDto
@@ -603,6 +610,23 @@ export class CampaignService {
           campaignBankId: bankId
         }
       });
+
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: creatorId
+        },
+        select: {
+          displayName: true,
+          email: true
+        }
+      });
+
+      await this.emailQueue.add(MailJobs.CampaignPending, {
+        campaignName: title,
+        email: user.email,
+        userName: user.displayName
+      });
+
       return { message: 'success' };
     } catch (error) {
       return { message: 'fail!' };
@@ -612,14 +636,41 @@ export class CampaignService {
   async update(updateCampaignDto: UpdateCampaignDto) {
     const { id, status } = updateCampaignDto;
 
-    return await this.prisma.campaign.update({
+    const campaign = await this.prisma.campaign.update({
       where: {
         id
       },
       data: {
         status
+      },
+      select: {
+        title: true,
+        user: {
+          select: {
+            displayName: true,
+            email: true
+          }
+        }
       }
     });
+
+    if (status === 'ON_GOING')
+      await this.emailQueue.add(MailJobs.CampaignApproved, {
+        campaignName: campaign.title,
+        email: campaign.user.email,
+        userName: campaign.user.displayName
+      });
+
+    if (status === 'REJECTED')
+      await this.emailQueue.add(MailJobs.CampaignRejected, {
+        campaignName: campaign.title,
+        email: campaign.user.email,
+        userName: campaign.user.displayName
+      });
+
+    return {
+      msg: 'Campaign updated'
+    };
   }
 
   async delete(id: number) {

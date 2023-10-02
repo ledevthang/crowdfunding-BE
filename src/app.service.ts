@@ -166,8 +166,7 @@ export class AppService {
         data: {
           status: 'SUCCEED'
         }
-      }),
-    ])
-    
+      })
+    ]);
   }
 }
