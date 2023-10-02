@@ -83,125 +83,125 @@ export class AppService {
     return data;
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  async sendCpnStatusEmailForInvestors() {
-    const CHUNK_SIZE = 10;
-    let i = 0;
+  // @Cron(CronExpression.EVERY_10_SECONDS)
+  // async sendCpnStatusEmailForInvestors() {
+  //   const CHUNK_SIZE = 10;
+  //   let i = 0;
 
-    while (true) {
-      let campaigns = await this.prisma.campaign.findMany({
-        orderBy: {
-          id: 'asc'
-        },
-        take: CHUNK_SIZE,
-        skip: i * CHUNK_SIZE,
-        select: {
-          endAt: true,
-          title: true,
-          progress: true,
-          transactions: {
-            where: {
-              status: 'PROCESSED',
-              user: {
-                role: 'INVESTOR'
-              }
-            },
-            select: {
-              user: {
-                select: {
-                  displayName: true,
-                  email: true
-                }
-              }
-            }
-          }
-        }
-      });
+  //   while (true) {
+  //     let campaigns = await this.prisma.campaign.findMany({
+  //       orderBy: {
+  //         id: 'asc'
+  //       },
+  //       take: CHUNK_SIZE,
+  //       skip: i * CHUNK_SIZE,
+  //       select: {
+  //         endAt: true,
+  //         title: true,
+  //         progress: true,
+  //         transactions: {
+  //           where: {
+  //             status: 'PROCESSED',
+  //             user: {
+  //               role: 'INVESTOR'
+  //             }
+  //           },
+  //           select: {
+  //             user: {
+  //               select: {
+  //                 displayName: true,
+  //                 email: true
+  //               }
+  //             }
+  //           }
+  //         }
+  //       }
+  //     });
 
-      if (!campaigns.length) {
-        return;
-      }
+  //     if (!campaigns.length) {
+  //       return;
+  //     }
 
-      campaigns = campaigns.filter(c => {
-        const end = c.endAt;
-        const now = new Date();
+  //     campaigns = campaigns.filter(c => {
+  //       const end = c.endAt;
+  //       const now = new Date();
 
-        return (
-          end.getDate() === now.getDate() &&
-          end.getMonth() === now.getMonth() &&
-          end.getFullYear() === now.getFullYear()
-        );
-      });
+  //       return (
+  //         end.getDate() === now.getDate() &&
+  //         end.getMonth() === now.getMonth() &&
+  //         end.getFullYear() === now.getFullYear()
+  //       );
+  //     });
 
-      await Promise.all(
-        campaigns.map(c => {
-          c.transactions.map(t =>
-            this.mailService.sendMailOnCpnEventForInvestors({
-              campaignTitle: c.title,
-              email: t.user.email,
-              event: c.progress < 100 ? 'fail' : 'succeed',
-              username: t.user.displayName
-            })
-          );
-        })
-      );
-      i++;
-    }
-  }
+  //     await Promise.all(
+  //       campaigns.map(c => {
+  //         c.transactions.map(t =>
+  //           this.mailService.sendMailOnCpnEventForInvestors({
+  //             campaignTitle: c.title,
+  //             email: t.user.email,
+  //             event: c.progress < 100 ? 'fail' : 'succeed',
+  //             username: t.user.displayName
+  //           })
+  //         );
+  //       })
+  //     );
+  //     i++;
+  //   }
+  // }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  async sendCpnStatusEmailForFundraisers() {
-    const CHUNK_SIZE = 10;
-    let i = 0;
+  // @Cron(CronExpression.EVERY_10_SECONDS)
+  // async sendCpnStatusEmailForFundraisers() {
+  //   const CHUNK_SIZE = 10;
+  //   let i = 0;
 
-    while (true) {
-      let campaigns = await this.prisma.campaign.findMany({
-        orderBy: {
-          id: 'asc'
-        },
-        take: CHUNK_SIZE,
-        skip: i * CHUNK_SIZE,
-        select: {
-          endAt: true,
-          title: true,
-          progress: true,
-          user: {
-            select: {
-              email: true,
-              displayName: true
-            }
-          }
-        }
-      });
+  //   while (true) {
+  //     let campaigns = await this.prisma.campaign.findMany({
+  //       orderBy: {
+  //         id: 'asc'
+  //       },
+  //       take: CHUNK_SIZE,
+  //       skip: i * CHUNK_SIZE,
+  //       select: {
+  //         endAt: true,
+  //         title: true,
+  //         progress: true,
+  //         user: {
+  //           select: {
+  //             email: true,
+  //             displayName: true
+  //           }
+  //         }
+  //       }
+  //     });
 
-      if (!campaigns.length) {
-        return;
-      }
+  //     if (!campaigns.length) {
+  //       return;
+  //     }
 
-      campaigns = campaigns.filter(c => {
-        const end = c.endAt;
-        const now = new Date();
+  //     campaigns = campaigns.filter(c => {
+  //       const end = c.endAt;
+  //       const now = new Date();
 
-        return (
-          end.getDate() === now.getDate() &&
-          end.getMonth() == now.getMonth() &&
-          end.getFullYear() === now.getFullYear()
-        );
-      });
+  //       return (
+  //         end.getDate() === now.getDate() &&
+  //         end.getMonth() == now.getMonth() &&
+  //         end.getFullYear() === now.getFullYear()
+  //       );
+  //     });
 
-      await Promise.all(
-        campaigns.map(c =>
-          this.mailService.sendMailOnCpnEventForFundraisers({
-            campaignTitle: c.title,
-            email: c.user.email,
-            event: c.progress < 100 ? 'fail' : 'succeed',
-            username: c.user.displayName
-          })
-        )
-      );
-      i++;
-    }
-  }
+  //     await Promise.all(
+  //       campaigns.map(c =>
+  //         this.mailService.sendMailOnCpnEventForFundraisers({
+  //           campaignTitle: c.title,
+  //           email: c.user.email,
+  //           event: c.progress < 100 ? 'fail' : 'succeed',
+  //           username: c.user.displayName
+  //         })
+  //       )
+  //     );
+  //     i++;
+  //   }
+  // }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async updateCampaignStatus() {
