@@ -83,7 +83,7 @@ export class AppService {
     return data;
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_DAY_AT_10AM)
   async sendCpnStatusEmailForInvestors() {
     const CHUNK_SIZE = 10;
     let i = 0;
@@ -149,7 +149,7 @@ export class AppService {
     }
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_DAY_AT_10AM)
   async sendCpnStatusEmailForFundraisers() {
     const CHUNK_SIZE = 10;
     let i = 0;
