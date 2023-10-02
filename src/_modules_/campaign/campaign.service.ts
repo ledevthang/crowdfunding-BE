@@ -374,13 +374,9 @@ export class CampaignService {
       };
 
     if (startDate && endDate)
-      campaignCondition.AND = {
-        startAt: {
-          lte: endDate
-        },
-        endAt: {
-          gte: startDate
-        }
+      campaignCondition.endAt = {
+        gte: startDate,
+        lte: endDate
       };
 
     if (campaignStatus === 'submitting')
