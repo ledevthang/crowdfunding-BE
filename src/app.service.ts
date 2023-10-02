@@ -90,11 +90,6 @@ export class AppService {
 
     while (true) {
       let campaigns = await this.prisma.campaign.findMany({
-        where: {
-          user: {
-            role: 'INVESTOR'
-          }
-        },
         orderBy: {
           id: 'asc'
         },
@@ -104,10 +99,20 @@ export class AppService {
           endAt: true,
           title: true,
           progress: true,
-          user: {
+          transactions: {
+            where: {
+              status: 'PROCESSED',
+              user: {
+                role: 'INVESTOR'
+              }
+            },
             select: {
-              email: true,
-              displayName: true
+              user: {
+                select: {
+                  displayName: true,
+                  email: true
+                }
+              }
             }
           }
         }
@@ -129,14 +134,16 @@ export class AppService {
       });
 
       await Promise.all(
-        campaigns.map(c =>
-          this.mailService.sendMailOnCpnEventForInvestors({
-            campaignTitle: c.title,
-            email: c.user.email,
-            event: c.progress < 100 ? 'fail' : 'succeed',
-            username: c.user.displayName
-          })
-        )
+        campaigns.map(c => {
+          c.transactions.map(t =>
+            this.mailService.sendMailOnCpnEventForInvestors({
+              campaignTitle: c.title,
+              email: t.user.email,
+              event: c.progress < 100 ? 'fail' : 'succeed',
+              username: t.user.displayName
+            })
+          );
+        })
       );
       i++;
     }
@@ -149,11 +156,6 @@ export class AppService {
 
     while (true) {
       let campaigns = await this.prisma.campaign.findMany({
-        where: {
-          user: {
-            role: 'FUNDRASIER'
-          }
-        },
         orderBy: {
           id: 'asc'
         },
