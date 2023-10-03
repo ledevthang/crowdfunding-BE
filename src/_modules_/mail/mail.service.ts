@@ -1,6 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import {
+  CampaignQueuePayload,
   KycPayload,
   TxnPendingPayload,
   TxnSucceedPayload
@@ -167,7 +168,7 @@ export class MailService {
     });
   }
 
-  async sendMailOnCpnEvent({
+  async sendMailOnCpnEventForInvestors({
     email,
     username,
     event,
@@ -200,6 +201,124 @@ export class MailService {
             </body>
           </html>
       `
+    });
+  }
+
+  async sendMailOnCpnEventForFundraisers({
+    email,
+    username,
+    event,
+    campaignTitle
+  }: {
+    email: string;
+    username: string;
+    event: 'fail' | 'succeed';
+    campaignTitle: string;
+  }) {
+    await this.mailerService.sendMail({
+      from: `crowdfunding platform`,
+      to: email,
+      subject: `Crowdfunding Notification`,
+      html: `
+            <html lang="en">
+            <head>
+              <meta charset="UTF-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <title>Document</title>
+            </head>
+            <body>
+              <h2>Dear ${username || email}</h2>
+              <p>
+              Your Campaign <strong>${campaignTitle}</strong> has been  ${
+                event === 'fail' ? 'failed' : 'successful'
+              }.
+              </p>
+              <p>Cheers,</p>
+              <p>The Crowdfunding team</p>
+            </body>
+          </html>
+      `
+    });
+  }
+
+  async sendMailOnCpnPending(payload: CampaignQueuePayload): Promise<void> {
+    const { email, userName, campaignName } = payload;
+
+    await this.mailerService.sendMail({
+      from: `crowdfunding platform`,
+      to: payload.email,
+      subject: `Crowdfunding Notification`,
+      html: `
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>Crowdfunding Notification</title>
+            </head>
+            <body>
+                <h2>Dear ${userName || email},</h2>
+                <br />
+                <p>Request to create the campaign <strong>${campaignName}</strong> has been received, the results will be sent to you soon.</p>
+                <br />
+                <p>Cheers,</p>
+                <p>The Crowdfunding team</p>
+            </body>
+            </html>
+          `
+    });
+  }
+
+  async sendMailOnCpnApproved(payload: CampaignQueuePayload): Promise<void> {
+    const { email, userName, campaignName } = payload;
+
+    await this.mailerService.sendMail({
+      from: `crowdfunding platform`,
+      to: payload.email,
+      subject: `Crowdfunding Notification`,
+      html: `
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>Crowdfunding Notification</title>
+            </head>
+            <body>
+                <h2>Dear ${userName || email},</h2>
+                <br />
+                <p>Request to create the campaign <strong>${campaignName}</strong> has been approved, please contact the admin if you have any questions.</p>
+                <br />
+                <p>Cheers,</p>
+                <p>The Crowdfunding team</p>
+            </body>
+            </html>
+          `
+    });
+  }
+
+  async sendMailOnCpnRejected(payload: CampaignQueuePayload): Promise<void> {
+    const { email, userName, campaignName } = payload;
+
+    await this.mailerService.sendMail({
+      from: `crowdfunding platform`,
+      to: payload.email,
+      subject: `Crowdfunding Notification`,
+      html: `
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>Crowdfunding Notification</title>
+            </head>
+            <body>
+                <h2>Dear ${userName || email},</h2>
+                <br />
+                <p>Request to create the campaign <strong>${campaignName}</strong> has been rejected, please contact the admin if you have any questions.</p>
+                <br />
+                <p>Cheers,</p>
+                <p>The Crowdfunding team</p>
+            </body>
+            </html>
+          `
     });
   }
 }

@@ -1,15 +1,46 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Campaign, FundCampaignStatus } from '@prisma/client';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { Campaign, FundCampaignStatus, UserRole } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsDateString, IsNotEmpty, IsNumber } from 'class-validator';
+import { IsDateString, IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
 import { IsFloat, OptionalProperty } from 'decorators/validator.decorator';
-import { BasePagingDto, BasePagingResponse } from 'utils/base.dto';
+import { BasePagingDto, BasePagingResponse, SortOrder } from 'utils/base.dto';
 
 // TYPE //
 export type ShortCampaign = Pick<
   Campaign,
   'id' | 'title' | 'goal' | 'endAt' | 'status'
 >;
+
+const sortFieldCampaign = {
+  title: 'title',
+  startAt: 'startAt',
+  endAt: 'endAt',
+  goal: 'goal',
+  status: 'status',
+  investors: 'investors',
+  progress: 'progress'
+} as const;
+
+type sortFieldCampaign =
+  (typeof sortFieldCampaign)[keyof typeof sortFieldCampaign];
+
+const campaignStatus = {
+  submitting: 'submitting',
+  funding: 'funding'
+} as const;
+
+type campaignStatus = (typeof campaignStatus)[keyof typeof campaignStatus];
+
+const sortFieldBankers = {
+  name: 'name',
+  email: 'email',
+  fundAt: 'fundAt',
+  amount: 'amount',
+  generatedNote: 'generatedNote'
+} as const;
+
+type sortFieldBankers =
+  (typeof sortFieldBankers)[keyof typeof sortFieldBankers];
 
 // END TYPE //
 
@@ -19,7 +50,7 @@ export class CreateCampaignDto {
   })
   @IsNotEmpty()
   title: string;
-  
+
   @ApiProperty()
   description: string;
 
@@ -58,6 +89,25 @@ export class CreateCampaignDto {
 
   @ApiProperty()
   categoryIds: number[];
+
+  @ApiProperty()
+  bankId: number;
+}
+
+export class UpdateCampaignDto extends PartialType(CreateCampaignDto) {
+  @ApiProperty({
+    description: 'This is a required property'
+  })
+  @IsNotEmpty()
+  id: number;
+
+  @ApiProperty({
+    enum: FundCampaignStatus,
+    description: 'This is a required property'
+  })
+  @IsNotEmpty()
+  @IsEnum(FundCampaignStatus)
+  status: FundCampaignStatus;
 }
 export class FindCampaignDto extends BasePagingDto {
   @OptionalProperty({
@@ -92,6 +142,15 @@ export class FindCampaignDto extends BasePagingDto {
   })
   @Transform(param => param.value.split(','))
   states?: FundCampaignStatus[];
+
+  @OptionalProperty({
+    enum: UserRole
+  })
+  @IsEnum(UserRole)
+  userRole?: UserRole;
+
+  @OptionalProperty()
+  userId?: number;
 }
 
 export class FindCampaignsResultDto extends BasePagingResponse<Campaign> {}
@@ -123,3 +182,60 @@ export class FindFundedCampaignDto extends BasePagingDto {
 }
 
 export class FundedCampaignDto extends BasePagingResponse<ShortCampaign> {}
+
+export class MyCampaignDto extends BasePagingDto {
+  @OptionalProperty()
+  campaignTitle?: string;
+
+  @OptionalProperty({
+    enum: FundCampaignStatus
+  })
+  @IsEnum(FundCampaignStatus)
+  status?: FundCampaignStatus;
+
+  @OptionalProperty()
+  startDate?: Date;
+
+  @OptionalProperty()
+  endDate?: Date;
+
+  @OptionalProperty({
+    type: 'string',
+    required: false
+  })
+  @IsEnum(sortFieldCampaign)
+  sortField: sortFieldCampaign;
+
+  @OptionalProperty({
+    type: 'string',
+
+    description: 'asc or desc'
+  })
+  @IsEnum(SortOrder)
+  sortOrder: SortOrder;
+
+  @OptionalProperty({
+    enum: campaignStatus
+  })
+  @IsEnum(campaignStatus)
+  campaignStatus?: campaignStatus;
+}
+
+export class BackersDto extends BasePagingDto {
+  @OptionalProperty({
+    enum: sortFieldBankers
+  })
+  @IsEnum(sortFieldBankers)
+  sortField: sortFieldBankers;
+
+  @OptionalProperty({
+    enum: SortOrder
+  })
+  @IsEnum(SortOrder)
+  sortOrder: SortOrder;
+}
+
+export class DetailCampaignDto {
+  @OptionalProperty()
+  userId?: number;
+}

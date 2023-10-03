@@ -11,28 +11,42 @@ datasource db {
 }
 
 model User {
-  id            Int           @id @default(autoincrement())
-  email         String        @unique
-  firstName     String        @map("first_name")
-  lastName      String        @map("last_name")
-  displayName   String        @map("display_name")
-  password      String
-  dateOfBirth   DateTime?     @map("date_of_birth")
-  phoneNumber   String?
-  streetAddress String?       @map("street_address")
-  country       String?
-  city          String?
-  stateProvince String?       @map("state_province")
-  zip           String?
-  role          UserRole
-  refreshToken  String?       @map("refresh_token")
-  avatarPicture String?       @map("avatar_picture")
-  activated     Boolean       @default(false)
-  kycInfor      KycInfor?
-  campaign      Campaign[]
-  Transaction   Transaction[]
+  id                Int                @id @default(autoincrement())
+  email             String             @unique
+  firstName         String             @map("first_name")
+  lastName          String             @map("last_name")
+  displayName       String             @map("display_name")
+  password          String
+  dateOfBirth       DateTime?          @map("date_of_birth")
+  phoneNumber       String?
+  streetAddress     String?            @map("street_address")
+  country           String?
+  city              String?
+  stateProvince     String?            @map("state_province")
+  zip               String?
+  role              UserRole
+  refreshToken      String?            @map("refresh_token")
+  avatarPicture     String?            @map("avatar_picture")
+  activated         Boolean            @default(false)
+  kycInfor          KycInfor?
+  campaign          Campaign[]
+  Transaction       Transaction[]
+  organizationInfor OrganizationInfor?
 
   @@map("user")
+}
+
+model OrganizationInfor {
+  id      Int     @id @default(autoincrement())
+  name    String?
+  type    String?
+  website String?
+  country String?
+
+  user   User @relation(fields: [userId], references: [id])
+  userId Int  @unique @map("user_id")
+
+  @@map("organization_infor")
 }
 
 model KycInfor {
@@ -80,22 +94,23 @@ model Campaign {
   creatorId     Int                @map("creator_id")
   user          User               @relation(fields: [creatorId], references: [id])
   campaignTags  String[]           @default([])
-  status        FundCampaignStatus @default(ON_GOING)
+  status        FundCampaignStatus @default(PENDING)
   categories    CategoryCampaign[]
   campaignFiles CampaignFile[]
   transactions  Transaction[]
-  campaignBank  CampaignBank?
+
+  campaignBank   CampaignBank @relation(fields: [campaignBankId], references: [id])
+  campaignBankId Int          @map("campaign_bank_id")
 
   @@map("campaign")
 }
 
 model CampaignBank {
-  id                Int      @id @default(autoincrement())
-  bankName          String   @map("bank_name")
-  accountHolderName String   @map("account_holder_name")
-  bankNumber        String   @map("bank_number")
-  campaignId        Int      @unique @map("campaign_id")
-  campaign          Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  id                Int        @id @default(autoincrement())
+  bankName          String     @map("bank_name")
+  accountHolderName String     @map("account_holder_name")
+  bankNumber        String     @map("bank_number")
+  campaign          Campaign[]
 
   @@map("campaign_bank")
 }
@@ -187,6 +202,8 @@ enum TransactionPaymentMethod {
 }
 
 enum FundCampaignStatus {
+  PENDING
+  REJECTED
   ON_GOING
   FAILED
   SUCCEED

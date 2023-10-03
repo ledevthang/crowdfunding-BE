@@ -14,6 +14,11 @@ export class CreateUserDto {
   password: string;
 
   role: UserRole;
+
+  organizationName?: string;
+  organizationType?: string;
+  country?: string;
+  organizationWebsite?: string;
 }
 
 export class AccountUpdate {
@@ -50,6 +55,18 @@ export class AccountUpdate {
 
   @OptionalProperty()
   currentPassword?: string;
+
+  @OptionalProperty()
+  organizationName?: string;
+
+  @OptionalProperty()
+  organizationType?: string;
+
+  @OptionalProperty()
+  organizationWebsite?: string;
+
+  @OptionalProperty()
+  organizationCoutry?: string;
 }
 
 export type UserResult = Omit<

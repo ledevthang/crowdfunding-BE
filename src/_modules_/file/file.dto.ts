@@ -29,6 +29,14 @@ export class KycImagesUpload {
   images: Express.Multer.File[];
 }
 
+export class CampaignUpload {
+  @ApiProperty({ type: 'string', format: 'binary', required: true })
+  image: Express.Multer.File;
+
+  @ApiProperty({ type: 'string', required: true })
+  campaignName: string;
+}
+
 export class FindFileDto {
   objectId: number;
   fileType: FileType;

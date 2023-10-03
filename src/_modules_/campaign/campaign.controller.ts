@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query
 } from '@nestjs/common';
@@ -12,9 +13,13 @@ import { ApiTags } from '@nestjs/swagger';
 import { User } from 'decorators/user.decorator';
 import { Auth } from 'decorators/auth.decorator';
 import {
+  BackersDto,
   CreateCampaignDto,
+  DetailCampaignDto,
   FindCampaignDto,
-  FindFundedCampaignDto
+  FindFundedCampaignDto,
+  MyCampaignDto,
+  UpdateCampaignDto
 } from './campaign.dto';
 
 @Controller('campaigns')
@@ -27,9 +32,9 @@ export class CampaignController {
     return await this.campaignService.find(findCampaignDto);
   }
 
-  @Get('/self')
+  @Get('/funded-campaign')
   @Auth('INVESTOR')
-  async findSelf(
+  async findFundedCampaign(
     @User('id') userId: number,
     @Query() findCampaignDto: FindFundedCampaignDto
   ) {
@@ -39,13 +44,27 @@ export class CampaignController {
     );
   }
 
-  @Get('/:id')
-  async findOne(@Param('id') id: string) {
-    return await this.campaignService.findOne(+id);
+  @Get('/my-campaign')
+  @Auth('ADMINORFUNDRAISER')
+  async findMyCampaign(
+    @User('id') userId: number,
+    @Query() query: MyCampaignDto
+  ) {
+    return await this.campaignService.findMyCampaign(userId, query);
+  }
+
+  @Get('/my-campaign/backers/:cId')
+  @Auth('ADMINORFUNDRAISER')
+  async findBackers(
+    @User('id') creatorId: number,
+    @Param('cId') cId: number,
+    @Query() query: BackersDto
+  ) {
+    return this.campaignService.findBackers(+cId, creatorId, query);
   }
 
   @Post()
-  @Auth('INVESTOR')
+  @Auth('ADMINORFUNDRAISER')
   async createCampaign(
     @User('id') userId: number,
     @Body() createCampaignDto: CreateCampaignDto
@@ -53,8 +72,22 @@ export class CampaignController {
     return await this.campaignService.create(userId, createCampaignDto);
   }
 
-  @Delete('/:id')
+  @Patch()
   @Auth('ADMIN')
+  async updateCampaign(@Body() updateCampaignDto: UpdateCampaignDto) {
+    return this.campaignService.update(updateCampaignDto);
+  }
+
+  @Get('/:id')
+  async findOne(
+    @Param('id') id: string,
+    @Query() { userId }: DetailCampaignDto
+  ) {
+    return await this.campaignService.findOne(+id, +userId);
+  }
+
+  @Delete('/:id')
+  @Auth('ADMINORFUNDRAISER')
   async delete(@Param('id') id: string) {
     return await this.campaignService.delete(+id);
   }

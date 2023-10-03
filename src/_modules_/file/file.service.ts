@@ -3,7 +3,7 @@ import { PrismaService } from '_modules_/prisma/prisma.service';
 import { InjectS3, S3 } from 'nestjs-s3';
 import { Claims } from 'types/auth.type';
 import { generateS3ObjectKey, generateS3UrlObject } from 'utils/generator.util';
-import { BaseFileUploadDto, FindFileDto } from './file.dto';
+import { BaseFileUploadDto, CampaignUpload, FindFileDto } from './file.dto';
 
 @Injectable()
 export class FileService {
@@ -14,7 +14,7 @@ export class FileService {
 
   async handleAvatar(avatar: Express.Multer.File, user: Claims) {
     const { id } = user;
-    const key = generateS3ObjectKey('avatars', id);
+    const key = generateS3ObjectKey('avatars', id, true);
     const url = await this.uploadToS3(avatar.buffer, key);
 
     return { url };
@@ -33,16 +33,19 @@ export class FileService {
     return { urls };
   }
 
-  private async uploadToS3(file: Buffer, key: string) {
-    await this.s3.putObject({
-      Bucket: process.env.AWS_BUCKET_NAME,
-      Key: key,
-      ACL: 'public-read',
-      Body: file
-    });
-    const url = generateS3UrlObject(key);
+  async uploadCampaignImages(
+    image: Express.Multer.File,
+    campaign: CampaignUpload
+  ) {
+    const { campaignName } = campaign;
+    const key = generateS3ObjectKey(
+      'campaign',
+      campaignName.replace(/\s+/g, '-').toLocaleLowerCase(),
+      true
+    );
+    const url = await this.uploadToS3(image.buffer, key);
 
-    return url;
+    return { url };
   }
 
   async upload(
@@ -90,7 +93,18 @@ export class FileService {
         uploadAt: 'desc'
       }
     });
-    console.log('findOne', findFileDto, file?.url || '');
     return file?.url || '';
+  }
+
+  private async uploadToS3(file: Buffer, key: string) {
+    await this.s3.putObject({
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: key,
+      ACL: 'public-read',
+      Body: file
+    });
+    const url = generateS3UrlObject(key);
+
+    return url;
   }
 }

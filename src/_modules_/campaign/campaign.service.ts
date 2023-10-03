@@ -1,28 +1,62 @@
 import { Injectable } from '@nestjs/common';
+import { Campaign, CampaignFileType, Prisma } from '@prisma/client';
 import { PrismaService } from '_modules_/prisma/prisma.service';
 import {
+  BackersDto,
   CreateCampaignDto,
   FindCampaignDto,
   FindCampaignsResultDto,
   FindFundedCampaignDto,
-  FundedCampaignDto
+  FundedCampaignDto,
+  MyCampaignDto,
+  UpdateCampaignDto
 } from './campaign.dto';
-import { Campaign, CampaignFileType, Prisma } from '@prisma/client';
+import { InjectQueue } from '@nestjs/bull';
+import { CampaignQueuePayload, MailJobs, Queues } from 'types/queue.type';
+import { Queue } from 'bull';
 
 @Injectable()
 export class CampaignService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @InjectQueue(Queues.mail)
+    private readonly emailQueue: Queue<CampaignQueuePayload>,
+    private readonly prisma: PrismaService
+  ) {}
 
   async find(
     findCampaignDto: FindCampaignDto
   ): Promise<FindCampaignsResultDto> {
-    const { page, size, query, sort, startDate, endDate, categoryIds, states } =
-      findCampaignDto;
+    const {
+      page,
+      size,
+      query,
+      sort,
+      startDate,
+      endDate,
+      categoryIds,
+      states,
+      userRole,
+      userId
+    } = findCampaignDto;
     const skip = (page - 1) * size;
     const [sortField, sortOrder] = sort;
-    const campaignCondition: Prisma.CampaignWhereInput = { categories: {} };
+    let campaignCondition: Prisma.CampaignWhereInput = {
+      categories: {},
+      status: {
+        notIn: ['PENDING', 'REJECTED']
+      }
+    };
+
     const titleCondition: Prisma.StringFilter = {};
     let campaignOrderBy: Prisma.CampaignOrderByWithRelationInput = {};
+
+    if (userId && userRole === 'FUNDRASIER') {
+      campaignCondition = {
+        creatorId: Number(userId)
+      };
+    }
+
+    if (userRole === 'ADMIN') campaignCondition = {};
 
     if (query) {
       titleCondition.contains = query;
@@ -62,6 +96,7 @@ export class CampaignService {
     }
 
     campaignCondition.title = titleCondition;
+
     const [campaigns, count] = await Promise.all([
       this.prisma.campaign.findMany({
         take: size,
@@ -127,38 +162,48 @@ export class CampaignService {
     };
   }
 
-  async findOne(id: number): Promise<Campaign> {
-    const campaign = await this.prisma.campaign.findUnique({
-      where: { id },
-      include: {
-        categories: {
-          select: {
-            category: {
-              select: {
-                id: true,
-                name: true
+  async findOne(id: number, userId?: number): Promise<Campaign> {
+    const [campaign, averageDonation] = await Promise.all([
+      this.prisma.campaign.findUnique({
+        where: { id },
+        include: {
+          categories: {
+            select: {
+              category: {
+                select: {
+                  name: true
+                }
               }
             }
-          }
-        },
-        campaignFiles: {
-          select: {
-            url: true,
-            type: true
-          }
-        },
-        transactions: {
-          select: {
-            userId: true
           },
-          where: {
-            completed: true,
-            status: 'PROCESSED'
+          campaignFiles: {
+            select: {
+              url: true,
+              type: true
+            }
           },
-          distinct: ['userId']
+          transactions: {
+            select: {
+              userId: true
+            },
+            where: {
+              completed: true,
+              status: 'PROCESSED'
+            },
+            distinct: ['userId']
+          }
         }
-      }
-    });
+      }),
+      this.prisma.transaction.aggregate({
+        where: {
+          campaignId: id
+        },
+        _avg: {
+          amount: true
+        }
+      })
+    ]);
+
     const result = {
       ...campaign,
       categories: campaign.categories.map(category => category.category),
@@ -170,7 +215,9 @@ export class CampaignService {
         campaign.campaignFiles.find(
           item => item.type === CampaignFileType.BACKGROUND
         )?.url || '',
-      investors: campaign.transactions.length
+      investors: campaign.transactions.length,
+      averageDonation: averageDonation._avg.amount,
+      isOwner: userId === campaign.creatorId
     };
     delete result.campaignFiles;
     delete result.transactions;
@@ -299,6 +346,229 @@ export class CampaignService {
     };
   }
 
+  async findMyCampaign(userId: number, query: MyCampaignDto) {
+    const {
+      page,
+      size,
+      sortField,
+      sortOrder,
+      campaignTitle,
+      status,
+      startDate,
+      endDate,
+      campaignStatus
+    } = query;
+
+    const campaignCondition: Prisma.CampaignWhereInput = {
+      creatorId: userId
+    };
+
+    let campaignSortCondition: Prisma.CampaignOrderByWithRelationInput = {
+      transactions: {
+        _count: 'asc'
+      }
+    };
+
+    if (campaignStatus === 'submitting')
+      campaignCondition.NOT = {
+        status: {
+          in: ['FAILED', 'SUCCEED']
+        }
+      };
+
+    if (campaignStatus === 'funding')
+      campaignCondition.NOT = {
+        status: {
+          in: ['PENDING', 'REJECTED']
+        }
+      };
+
+    if (campaignTitle)
+      campaignCondition.title = {
+        contains: campaignTitle,
+        mode: 'insensitive'
+      };
+
+    if (status)
+      campaignCondition.status = {
+        equals: status
+      };
+
+    if (startDate && endDate)
+      campaignCondition.endAt = {
+        gte: startDate,
+        lte: endDate
+      };
+
+    if (sortField && sortOrder) {
+      if (sortField === 'investors') {
+        campaignSortCondition.transactions = {
+          _count: sortOrder
+        };
+      } else {
+        campaignSortCondition = {
+          [sortField]: sortOrder
+        };
+      }
+    }
+
+    const [campaigns, count, totalRaised, totalSuceed] = await Promise.all([
+      this.prisma.campaign.findMany({
+        where: campaignCondition,
+        orderBy: campaignSortCondition,
+        include: {
+          transactions: {
+            where: {
+              completed: true,
+              status: 'PROCESSED'
+            },
+            distinct: ['userId']
+          }
+        },
+        take: size,
+        skip: (page - 1) * size
+      }),
+      this.prisma.campaign.count({
+        where: campaignCondition
+      }),
+      this.prisma.campaign.aggregate({
+        where: {
+          creatorId: userId
+        },
+        _sum: {
+          currentAmount: true
+        }
+      }),
+      this.prisma.campaign.findMany({
+        where: {
+          creatorId: userId,
+          status: 'SUCCEED'
+        }
+      })
+    ]);
+
+    const result = campaigns.map(campaign => {
+      const newCampaign = {
+        ...campaign,
+        investors: campaign.transactions.length
+      };
+      return newCampaign;
+    });
+
+    return {
+      data: result,
+      page: page,
+      size: size,
+      totalPages: Math.ceil(count / size) || 0,
+      totalElement: count,
+      totalGoal: totalRaised._sum.currentAmount,
+      totalSuceed: totalSuceed.length
+    };
+  }
+
+  async findBackers(cId: number, creatorId: number, query: BackersDto) {
+    const { page, size, sortField, sortOrder } = query;
+
+    const backerConditions: Prisma.TransactionWhereInput = {
+      campaignId: cId,
+      status: 'PROCESSED',
+      campaign: {
+        creatorId: creatorId
+      }
+    };
+
+    let backersOrderby: Prisma.TransactionOrderByWithRelationInput = {
+      user: {}
+    };
+
+    if (sortField === 'name' && sortOrder)
+      backersOrderby.user = {
+        displayName: sortOrder
+      };
+
+    if (sortField === 'email' && sortOrder)
+      backersOrderby.user = {
+        email: sortOrder
+      };
+
+    if (
+      (sortField === 'amount' ||
+        sortField === 'fundAt' ||
+        sortField === 'generatedNote') &&
+      sortOrder
+    )
+      backersOrderby = {
+        [sortField]: sortOrder
+      };
+
+    const [backers, totalElement, aggregate, totalInvestor] = await Promise.all(
+      [
+        this.prisma.transaction.findMany({
+          where: backerConditions,
+          take: size,
+          skip: (page - 1) * size,
+          select: {
+            id: true,
+            amount: true,
+            fundAt: true,
+            generatedNote: true,
+            campaign: {
+              select: {
+                title: true
+              }
+            },
+            user: {
+              select: {
+                email: true,
+                displayName: true
+              }
+            }
+          },
+          orderBy: backersOrderby
+        }),
+        this.prisma.transaction.count({
+          where: backerConditions
+        }),
+        this.prisma.transaction.aggregate({
+          where: backerConditions,
+          _sum: {
+            amount: true
+          },
+          _avg: {
+            amount: true
+          }
+        }),
+        this.prisma.transaction.findMany({
+          where: backerConditions,
+          distinct: ['userId']
+        })
+      ]
+    );
+
+    const result = backers.map(
+      ({ amount, fundAt, generatedNote, user, campaign, id }) => ({
+        id,
+        fundName: user.displayName,
+        fundEmail: user.email,
+        fundAt,
+        generatedNote,
+        amount,
+        campaignName: campaign.title
+      })
+    );
+
+    return {
+      data: result,
+      page: page,
+      size: size,
+      totalPages: Math.ceil(totalElement / size) || 0,
+      totalElement: totalElement,
+      totalAmount: aggregate._sum.amount,
+      averageAmount: aggregate._avg.amount,
+      totalInvestor: totalInvestor.length
+    };
+  }
+
   async create(creatorId: number, createCampaignDto: CreateCampaignDto) {
     const {
       title,
@@ -310,7 +580,8 @@ export class CampaignService {
       campaignTags,
       categoryIds,
       imageUrl,
-      backGroundUrl
+      backGroundUrl,
+      bankId
     } = createCampaignDto;
     try {
       await this.prisma.campaign.create({
@@ -337,13 +608,71 @@ export class CampaignService {
                 type: CampaignFileType.BACKGROUND
               }
             ]
-          }
+          },
+          campaignBankId: bankId
         }
       });
+
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: creatorId
+        },
+        select: {
+          displayName: true,
+          email: true
+        }
+      });
+
+      await this.emailQueue.add(MailJobs.CampaignPending, {
+        campaignName: title,
+        email: user.email,
+        userName: user.displayName
+      });
+
       return { message: 'success' };
     } catch (error) {
       return { message: 'fail!' };
     }
+  }
+
+  async update(updateCampaignDto: UpdateCampaignDto) {
+    const { id, status } = updateCampaignDto;
+
+    const campaign = await this.prisma.campaign.update({
+      where: {
+        id
+      },
+      data: {
+        status
+      },
+      select: {
+        title: true,
+        user: {
+          select: {
+            displayName: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    if (status === 'ON_GOING')
+      await this.emailQueue.add(MailJobs.CampaignApproved, {
+        campaignName: campaign.title,
+        email: campaign.user.email,
+        userName: campaign.user.displayName
+      });
+
+    if (status === 'REJECTED')
+      await this.emailQueue.add(MailJobs.CampaignRejected, {
+        campaignName: campaign.title,
+        email: campaign.user.email,
+        userName: campaign.user.displayName
+      });
+
+    return {
+      msg: 'Campaign updated'
+    };
   }
 
   async delete(id: number) {

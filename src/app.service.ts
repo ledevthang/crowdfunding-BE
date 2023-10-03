@@ -22,6 +22,7 @@ export class AppService {
     return 'Hello kitty';
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async kycMock(_userId: number): Promise<Mock> {
     const rand = Math.floor(Math.random() * 3);
     return {
@@ -82,13 +83,18 @@ export class AppService {
     return data;
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  async sendCpnStatusEmail() {
+  @Cron(CronExpression.EVERY_DAY_AT_8AM)
+  async sendCpnStatusEmailForInvestors() {
     const CHUNK_SIZE = 10;
     let i = 0;
 
     while (true) {
-      let campaigns = await this.prisma.campaign.findMany({
+      const campaigns = await this.prisma.campaign.findMany({
+        where: {
+          status: {
+            in: ['SUCCEED', 'FAILED']
+          }
+        },
         orderBy: {
           id: 'asc'
         },
@@ -98,10 +104,27 @@ export class AppService {
           endAt: true,
           title: true,
           progress: true,
+          status: true,
           user: {
             select: {
               email: true,
               displayName: true
+            }
+          },
+          transactions: {
+            where: {
+              status: 'PROCESSED',
+              user: {
+                role: 'INVESTOR'
+              }
+            },
+            select: {
+              user: {
+                select: {
+                  displayName: true,
+                  email: true
+                }
+              }
             }
           }
         }
@@ -111,26 +134,23 @@ export class AppService {
         return;
       }
 
-      campaigns = campaigns.filter(c => {
-        const end = c.endAt;
-        const now = new Date();
-
-        return (
-          end.getDate() === now.getDate() &&
-          end.getMonth() == now.getMonth() &&
-          end.getFullYear() === now.getFullYear()
-        );
-      });
-
       await Promise.all(
-        campaigns.map(c =>
-          this.mailService.sendMailOnCpnEvent({
+        campaigns.map(c => {
+          this.mailService.sendMailOnCpnEventForFundraisers({
             campaignTitle: c.title,
             email: c.user.email,
-            event: c.progress < 100 ? 'fail' : 'succeed',
+            event: c.status === 'FAILED' ? 'fail' : 'succeed',
             username: c.user.displayName
-          })
-        )
+          });
+          c.transactions.map(t =>
+            this.mailService.sendMailOnCpnEventForInvestors({
+              campaignTitle: c.title,
+              email: t.user.email,
+              event: c.status === 'FAILED' ? 'fail' : 'succeed',
+              username: t.user.displayName
+            })
+          );
+        })
       );
       i++;
     }
@@ -166,8 +186,7 @@ export class AppService {
         data: {
           status: 'SUCCEED'
         }
-      }),
-    ])
-    
+      })
+    ]);
   }
 }
