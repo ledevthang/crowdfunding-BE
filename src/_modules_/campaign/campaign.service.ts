@@ -369,6 +369,20 @@ export class CampaignService {
       }
     };
 
+    if (campaignStatus === 'submitting')
+      campaignCondition.NOT = {
+        status: {
+          in: ['FAILED', 'SUCCEED']
+        }
+      };
+
+    if (campaignStatus === 'funding')
+      campaignCondition.NOT = {
+        status: {
+          in: ['PENDING', 'REJECTED']
+        }
+      };
+
     if (campaignTitle)
       campaignCondition.title = {
         contains: campaignTitle,
@@ -384,18 +398,6 @@ export class CampaignService {
       campaignCondition.endAt = {
         gte: startDate,
         lte: endDate
-      };
-
-    if (campaignStatus === 'submitting')
-      campaignCondition.NOT = {
-        status: {
-          in: ['FAILED', 'SUCCEED']
-        }
-      };
-
-    if (campaignStatus === 'funding')
-      campaignCondition.status = {
-        notIn: ['PENDING', 'REJECTED']
       };
 
     if (sortField && sortOrder) {
