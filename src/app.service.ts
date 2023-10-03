@@ -83,13 +83,18 @@ export class AppService {
     return data;
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_10AM)
+  @Cron(CronExpression.EVERY_DAY_AT_8AM)
   async sendCpnStatusEmailForInvestors() {
     const CHUNK_SIZE = 10;
     let i = 0;
 
     while (true) {
-      let campaigns = await this.prisma.campaign.findMany({
+      const campaigns = await this.prisma.campaign.findMany({
+        where: {
+          status: {
+            in: ['SUCCEED', 'FAILED']
+          }
+        },
         orderBy: {
           id: 'asc'
         },
@@ -99,6 +104,13 @@ export class AppService {
           endAt: true,
           title: true,
           progress: true,
+          status: true,
+          user: {
+            select: {
+              email: true,
+              displayName: true
+            }
+          },
           transactions: {
             where: {
               status: 'PROCESSED',
@@ -118,90 +130,27 @@ export class AppService {
         }
       });
 
-      campaigns = campaigns.filter(c => {
-        const end = c.endAt;
-        const now = new Date();
-
-        return (
-          end.getDate() === now.getDate() &&
-          end.getMonth() === now.getMonth() &&
-          end.getFullYear() === now.getFullYear()
-        );
-      });
-
       if (!campaigns.length) {
         return;
       }
 
       await Promise.all(
         campaigns.map(c => {
+          this.mailService.sendMailOnCpnEventForFundraisers({
+            campaignTitle: c.title,
+            email: c.user.email,
+            event: c.status === 'FAILED' ? 'fail' : 'succeed',
+            username: c.user.displayName
+          });
           c.transactions.map(t =>
             this.mailService.sendMailOnCpnEventForInvestors({
               campaignTitle: c.title,
               email: t.user.email,
-              event: c.progress < 100 ? 'fail' : 'succeed',
+              event: c.status === 'FAILED' ? 'fail' : 'succeed',
               username: t.user.displayName
             })
           );
         })
-      );
-      i++;
-    }
-  }
-
-  @Cron(CronExpression.EVERY_DAY_AT_10AM)
-  async sendCpnStatusEmailForFundraisers() {
-    const CHUNK_SIZE = 10;
-    let i = 0;
-
-    while (true) {
-      let campaigns = await this.prisma.campaign.findMany({
-        orderBy: {
-          id: 'asc'
-        },
-        take: CHUNK_SIZE,
-        skip: i * CHUNK_SIZE,
-        select: {
-          endAt: true,
-          title: true,
-          progress: true,
-          user: {
-            select: {
-              email: true,
-              displayName: true
-            }
-          }
-        }
-      });
-
-      if (!campaigns.length) {
-        return;
-      }
-
-      campaigns = campaigns.filter(c => {
-        const end = c.endAt;
-        const now = new Date();
-
-        return (
-          end.getDate() === now.getDate() &&
-          end.getMonth() == now.getMonth() &&
-          end.getFullYear() === now.getFullYear()
-        );
-      });
-
-      if (!campaigns.length) {
-        return;
-      }
-
-      await Promise.all(
-        campaigns.map(c =>
-          this.mailService.sendMailOnCpnEventForFundraisers({
-            campaignTitle: c.title,
-            email: c.user.email,
-            event: c.progress < 100 ? 'fail' : 'succeed',
-            username: c.user.displayName
-          })
-        )
       );
       i++;
     }
